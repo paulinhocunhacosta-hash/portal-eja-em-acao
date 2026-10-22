@@ -1,0 +1,668 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Painel Administrativo | Portal EJA em Ação</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .painel {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .painel h2 {
+            color: #155e75;
+            margin-bottom: 15px;
+        }
+
+        .aviso {
+            padding: 15px;
+            background: #fef3c7;
+            color: #92400e;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .resumo {
+            margin: 25px 0;
+            font-weight: bold;
+        }
+
+        .cartao-pendente {
+            background: white;
+            padding: 22px;
+            margin-bottom: 22px;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(0,0,0,.08);
+            overflow-wrap: anywhere;
+        }
+
+        .cartao-pendente h3 {
+            color: #155e75;
+            margin-bottom: 15px;
+        }
+
+        .cartao-pendente p {
+            line-height: 1.6;
+            margin: 8px 0;
+        }
+
+        .galeria-fotos {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .galeria-fotos img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .botoes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .botoes button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .aprovar {
+            background: #166534;
+            color: white;
+        }
+
+        .rejeitar {
+            background: #b91c1c;
+            color: white;
+        }
+
+        .link-pdf {
+            display: inline-block;
+            margin-top: 12px;
+            color: #0e7490;
+            font-weight: bold;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin: 25px 0;
+            color: #0e7490;
+            font-weight: bold;
+        }
+
+        .vazio {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="cabecalho">
+        <div class="logo">
+            <h1>PORTAL EJA EM AÇÃO</h1>
+            <p>Administração de ações e projetos</p>
+        </div>
+    </header>
+
+    <main class="painel">
+
+        <h2>Painel Administrativo</h2>
+
+        <p class="aviso">
+            Atenção: este painel é uma versão de teste local.
+            Ainda não possui senha administrativa nem proteção
+            no servidor. Não o utilize publicamente para administrar
+            dados reais.
+        </p>
+
+        <p id="resumo" class="resumo"></p>
+
+        <div id="listaPendentes"></div>
+
+        <a class="voltar" href="index.html">
+            ← Voltar à página inicial
+        </a>
+
+    </main>
+
+    <footer>
+        <p>© 2026 Portal EJA em Ação</p>
+    </footer>
+
+    <script>
+        const lista = document.getElementById("listaPendentes");
+        const resumo = document.getElementById("resumo");
+
+        function criarElemento(tag, texto, classe) {
+            const elemento = document.createElement(tag);
+
+            if (texto !== undefined) {
+                elemento.textContent = texto;
+            }
+
+            if (classe) {
+                elemento.className = classe;
+            }
+
+            return elemento;
+        }
+
+        function lerRegistros() {
+            return JSON.parse(
+                localStorage.getItem("eja_acoes") || "[]"
+            );
+        }
+
+        function salvarRegistros(registros) {
+            localStorage.setItem(
+                "eja_acoes",
+                JSON.stringify(registros)
+            );
+        }
+
+        function atualizarPainel() {
+            lista.replaceChildren();
+
+            let registros;
+
+            try {
+                registros = lerRegistros();
+            } catch (erro) {
+                resumo.textContent =
+                    "Erro ao ler os cadastros salvos.";
+                return;
+            }
+
+            const pendentes = registros.filter(
+                acao =>
+                    !acao.status ||
+                    acao.status === "pendente"
+            );
+
+            resumo.textContent =
+                "Ações aguardando aprovação: " + pendentes.length;
+
+            if (pendentes.length === 0) {
+                lista.appendChild(
+                    criarElemento(
+                        "p",
+                        "Não há ações pendentes de aprovação.",
+                        "vazio"
+                    )
+                );
+                return;
+            }
+
+            pendentes.slice().reverse().forEach(acao => {
+                const cartao = criarElemento("article", "");
+                cartao.className = "cartao-pendente";
+
+                cartao.appendChild(
+                    criarElemento("h3", acao.titulo || "Sem título")
+                );
+
+                cartao.appendChild(
+                    criarElemento(
+                        "p",
+                        "Professor: " + (acao.professor || "Não informado")
+                    )
+                );
+
+                cartao.appendChild(
+                    criarElemento(
+                        "p",
+                        "Escola: " + (acao.escola || "Não informada")
+                    )
+                );
+
+                if (acao.turma) {
+                    cartao.appendChild(
+                        criarElemento("p", "Turma: " + acao.turma)
+                    );
+                }
+
+                if (acao.data) {
+                    const dataFormatada = new Date(
+                        acao.data + "T12:00:00"
+                    ).toLocaleDateString("pt-BR");
+
+                    cartao.appendChild(
+                        criarElemento("p", "Data: " + dataFormatada)
+                    );
+                }
+
+                cartao.appendChild(
+                    criarElemento(
+                        "p",
+                        "Descrição: " + (acao.descricao || "")
+                    )
+                );
+
+                if (acao.fotos && acao.fotos.length > 0) {
+                    const galeria = criarElemento("div", "");
+                    galeria.className = "galeria-fotos";
+
+                    acao.fotos.forEach(foto => {
+                        if (
+                            !foto.conteudo ||
+                            !foto.conteudo.startsWith("data:image/")
+                        ) {
+                            return;
+                        }
+
+                        const imagem = document.createElement("img");
+                        imagem.src = foto.conteudo;
+                        imagem.alt = "Foto da ação";
+
+                        galeria.appendChild(imagem);
+                    });
+
+                    if (galeria.childElementCount > 0) {
+                        cartao.appendChild(galeria);
+                    }
+                }
+
+                if (
+                    acao.documento &&
+                    acao.documento.conteudo &&
+                    acao.documento.conteudo.startsWith(
+                        "data:application/pdf"
+                    )
+                ) {
+                    const link = document.createElement("a");
+
+                    link.href = acao.documento.conteudo;
+                    link.download =
+                        acao.documento.nome || "documento.pdf";
+                    link.textContent = "Abrir ou baixar PDF";
+                    link.className = "link-pdf";
+
+                    cartao.appendChild(link);
+                }
+
+                const botoes = criarElemento("div", "");
+                botoes.className = "botoes";
+
+                const botaoAprovar = criarElemento(
+                    "button",
+                    "Aprovar publicação",
+                    "aprovar"
+                );
+
+                botaoAprovar.type = "button";
+
+                botaoAprovar.addEventListener("click", function() {
+                    alterarStatus(acao.id, "aprovada");
+                });
+
+                const botaoRejeitar = criarElemento(
+                    "button",
+                    "Rejeitar cadastro",
+                    "rejeitar"
+                );
+
+                botaoRejeitar.type = "button";
+
+                botaoRejeitar.addEventListener("click", function() {
+                    const confirmou = confirm(
+                        "Deseja marcar esta ação como rejeitada?"
+                    );
+
+                    if (confirmou) {
+                        alterarStatus(acao.id, "rejeitada");
+                    }
+                });
+
+                botoes.appendChild(botaoAprovar);
+                botoes.appendChild(botaoRejeitar);
+
+                cartao.appendChild(botoes);
+                lista.appendChild(cartao);
+            });
+        }
+
+        function alterarStatus(id, novoStatus) {
+            try {
+                const registros = lerRegistros();
+
+                const indice = registros.findIndex(
+                    acao => acao.id === id
+                );
+
+                if (indice === -1) {
+                    alert("Cadastro não encontrado.");
+                    atualizarPainel();
+                    return;
+                }
+
+                registros[indice].status = novoStatus;
+
+                registros[indice].atualizadaEm =
+                    new Date().toISOString();
+
+                salvarRegistros(registros);
+                atualizarPainel();
+
+                if (novoStatus === "aprovada") {
+                    alert(
+                        "Ação aprovada! Atualize a galeria pública."
+                    );
+                } else {
+                    alert("Cadastro marcado como rejeitado.");
+                }
+
+            } catch (erro) {
+                alert("Não foi possível atualizar o cadastro.");
+            }
+        }
+
+        atualizarPainel();
+    </script>
+
+
+<!-- ÁREA DE CADASTRO E APROVAÇÃO DE MATERIAIS -->
+
+<section id="administracaoMateriais" style="max-width: 1100px; margin: 40px auto; padding: 20px; font-family: Arial, sans-serif;">
+
+    <h2 style="color: #155e75;">Materiais Pedagógicos</h2>
+
+    <p>
+        Cadastre materiais em PDF para disponibilização aos professores.
+        Os materiais somente serão publicados após aprovação.
+    </p>
+
+    <form id="formularioMaterial" style="background: #f0f9ff; padding: 20px; border-radius: 10px; margin: 20px 0;">
+
+        <label for="tituloMaterial"><strong>Título do material:</strong></label>
+        <input
+            type="text"
+            id="tituloMaterial"
+            required
+            maxlength="100"
+            placeholder="Ex.: Atividades de leitura para EJA"
+            style="display: block; width: 100%; box-sizing: border-box; padding: 10px; margin: 8px 0 16px;"
+        >
+
+        <label for="categoriaMaterial"><strong>Categoria:</strong></label>
+        <select
+            id="categoriaMaterial"
+            required
+            style="display: block; width: 100%; box-sizing: border-box; padding: 10px; margin: 8px 0 16px;"
+        >
+            <option value="">Selecione uma categoria</option>
+            <option value="Planos de aula">Planos de aula</option>
+            <option value="Atividades pedagógicas">Atividades pedagógicas</option>
+            <option value="Documentos em PDF">Documentos em PDF</option>
+            <option value="Sequências didáticas">Sequências didáticas</option>
+            <option value="Outros materiais">Outros materiais</option>
+        </select>
+
+        <label for="descricaoMaterial"><strong>Descrição:</strong></label>
+        <textarea
+            id="descricaoMaterial"
+            required
+            maxlength="500"
+            rows="4"
+            placeholder="Explique brevemente como o material pode ser utilizado."
+            style="display: block; width: 100%; box-sizing: border-box; padding: 10px; margin: 8px 0 16px;"
+        ></textarea>
+
+        <label for="arquivoMaterial"><strong>Arquivo PDF:</strong></label>
+        <input
+            type="file"
+            id="arquivoMaterial"
+            accept=".pdf,application/pdf"
+            required
+            style="display: block; margin: 8px 0 16px;"
+        >
+
+        <p style="font-size: 14px;">
+            Limite desta versão: 1 MB por arquivo PDF.
+        </p>
+
+        <button
+            type="submit"
+            style="background: #0e7490; color: white; border: none; padding: 12px 18px; border-radius: 6px; cursor: pointer;"
+        >
+            Cadastrar material
+        </button>
+
+        <p id="mensagemMaterial" role="status" aria-live="polite"></p>
+    </form>
+
+    <h2 style="color: #155e75;">Materiais cadastrados</h2>
+
+    <div id="listaAdministracaoMateriais"></div>
+
+</section>
+
+<script>
+(function () {
+    const formulario = document.getElementById("formularioMaterial");
+    const mensagem = document.getElementById("mensagemMaterial");
+    const lista = document.getElementById("listaAdministracaoMateriais");
+    const campoArquivo = document.getElementById("arquivoMaterial");
+
+    const LIMITE_BYTES = 1024 * 1024;
+
+    function lerMateriais() {
+        try {
+            const dados = JSON.parse(
+                localStorage.getItem("eja_materiais") || "[]"
+            );
+
+            return Array.isArray(dados) ? dados : [];
+        } catch (erro) {
+            return [];
+        }
+    }
+
+    function salvarMateriais(materiais) {
+        localStorage.setItem(
+            "eja_materiais",
+            JSON.stringify(materiais)
+        );
+    }
+
+    function criarTexto(tag, texto) {
+        const elemento = document.createElement(tag);
+        elemento.textContent = texto;
+        return elemento;
+    }
+
+    function exibirLista() {
+        lista.replaceChildren();
+
+        const materiais = lerMateriais();
+
+        if (materiais.length === 0) {
+            lista.appendChild(
+                criarTexto("p", "Nenhum material cadastrado até o momento.")
+            );
+            return;
+        }
+
+        materiais.slice().reverse().forEach(material => {
+            const cartao = document.createElement("article");
+
+            cartao.style.cssText =
+                "background:#fff; border:1px solid #ddd; border-radius:10px; padding:18px; margin:15px 0; overflow-wrap:anywhere;";
+
+            cartao.appendChild(
+                criarTexto("h3", material.titulo || "Material sem título")
+            );
+
+            cartao.appendChild(
+                criarTexto("p", "Categoria: " + (material.categoria || "Geral"))
+            );
+
+            cartao.appendChild(
+                criarTexto("p", "Descrição: " + (material.descricao || "Sem descrição"))
+            );
+
+            cartao.appendChild(
+                criarTexto("p", "Arquivo: " + (material.nomeArquivo || "PDF"))
+            );
+
+            const situacao = {
+                pendente: "Aguardando aprovação",
+                aprovado: "Aprovado — publicado",
+                rejeitado: "Cadastro rejeitado"
+            };
+
+            cartao.appendChild(
+                criarTexto(
+                    "p",
+                    "Status: " + (situacao[material.status] || "Aguardando aprovação")
+                )
+            );
+
+            if (material.status === "pendente") {
+                const aprovar = document.createElement("button");
+                aprovar.type = "button";
+                aprovar.textContent = "Aprovar publicação";
+                aprovar.style.cssText =
+                    "background:#15803d;color:white;border:0;padding:10px;border-radius:5px;cursor:pointer;margin:5px 8px 5px 0;";
+
+                aprovar.addEventListener("click", function () {
+                    alterarStatus(material.id, "aprovado");
+                });
+
+                const rejeitar = document.createElement("button");
+                rejeitar.type = "button";
+                rejeitar.textContent = "Rejeitar cadastro";
+                rejeitar.style.cssText =
+                    "background:#b91c1c;color:white;border:0;padding:10px;border-radius:5px;cursor:pointer;margin:5px 0;";
+
+                rejeitar.addEventListener("click", function () {
+                    alterarStatus(material.id, "rejeitado");
+                });
+
+                cartao.appendChild(aprovar);
+                cartao.appendChild(rejeitar);
+            }
+
+            lista.appendChild(cartao);
+        });
+    }
+
+    function alterarStatus(id, status) {
+        const materiais = lerMateriais();
+        const material = materiais.find(item => item.id === id);
+
+        if (!material) {
+            mensagem.textContent = "Não foi possível localizar esse material.";
+            return;
+        }
+
+        material.status = status;
+
+        try {
+            salvarMateriais(materiais);
+            mensagem.textContent = status === "aprovado"
+                ? "Material aprovado para publicação."
+                : "Cadastro rejeitado.";
+
+            exibirLista();
+        } catch (erro) {
+            mensagem.textContent =
+                "Não foi possível salvar a alteração. O armazenamento pode estar cheio.";
+        }
+    }
+
+    formulario.addEventListener("submit", function (evento) {
+        evento.preventDefault();
+
+        const titulo = document.getElementById("tituloMaterial").value.trim();
+        const categoria = document.getElementById("categoriaMaterial").value;
+        const descricao = document.getElementById("descricaoMaterial").value.trim();
+        const arquivo = campoArquivo.files[0];
+
+        if (!titulo || !categoria || !descricao || !arquivo) {
+            mensagem.textContent = "Preencha todos os campos e selecione um PDF.";
+            return;
+        }
+
+        if (
+            arquivo.type !== "application/pdf" &&
+            !arquivo.name.toLowerCase().endsWith(".pdf")
+        ) {
+            mensagem.textContent = "Selecione um arquivo PDF válido.";
+            return;
+        }
+
+        if (arquivo.size === 0 || arquivo.size > LIMITE_BYTES) {
+            mensagem.textContent =
+                "O arquivo precisa ter conteúdo e tamanho máximo de 1 MB.";
+            return;
+        }
+
+        const leitor = new FileReader();
+
+        leitor.onload = function () {
+            if (typeof leitor.result !== "string") {
+                mensagem.textContent = "Não foi possível ler o arquivo.";
+                return;
+            }
+
+            const materiais = lerMateriais();
+
+            const novoMaterial = {
+                id: Date.now().toString() + "-" + Math.random().toString(36).slice(2, 8),
+                titulo: titulo,
+                categoria: categoria,
+                descricao: descricao,
+                nomeArquivo: arquivo.name,
+                arquivo: leitor.result,
+                status: "pendente",
+                criadoEm: new Date().toISOString()
+            };
+
+            materiais.push(novoMaterial);
+
+            try {
+                salvarMateriais(materiais);
+                formulario.reset();
+
+                mensagem.textContent =
+                    "Material cadastrado como pendente. Aprove-o na lista abaixo para publicá-lo.";
+
+                exibirLista();
+            } catch (erro) {
+                mensagem.textContent =
+                    "Não foi possível salvar o PDF. O armazenamento do navegador pode estar cheio.";
+            }
+        };
+
+        leitor.onerror = function () {
+            mensagem.textContent = "Ocorreu um erro ao ler o PDF.";
+        };
+
+        leitor.readAsDataURL(arquivo);
+    });
+
+    exibirLista();
+})();
+</script>
+</body>
+</html>

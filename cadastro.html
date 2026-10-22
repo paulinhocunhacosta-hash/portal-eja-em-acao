@@ -1,0 +1,296 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Ação | Portal EJA em Ação</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .formulario-pagina {
+            max-width: 850px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 18px rgba(0,0,0,.08);
+        }
+
+        .formulario-pagina h2 {
+            color: #155e75;
+            margin-bottom: 12px;
+        }
+
+        .formulario-pagina .introducao {
+            margin-bottom: 25px;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+        .campo label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .campo input,
+        .campo select,
+        .campo textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font: inherit;
+        }
+
+        .campo textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .acoes-formulario {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .botao-formulario {
+            display: inline-block;
+            padding: 13px 20px;
+            border: none;
+            border-radius: 7px;
+            background: #0e7490;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .botao-voltar {
+            background: #e2e8f0;
+            color: #12343b;
+        }
+
+        .aviso {
+            margin-top: 20px;
+            padding: 12px;
+            background: #fef3c7;
+            border-radius: 7px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .formulario-pagina {
+                margin: 20px 12px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="cabecalho">
+        <div class="logo">
+            <h1>PORTAL EJA EM AÇÃO</h1>
+            <p>Educação, participação e transformação</p>
+        </div>
+    </header>
+
+    <main>
+        <section class="formulario-pagina">
+            <h2>Cadastrar uma nova ação</h2>
+            <p class="introducao">
+                Preencha os dados abaixo para registrar uma atividade
+                ou projeto desenvolvido na Educação de Jovens e Adultos.
+            </p>
+
+            <form id="formularioAcao">
+                <div class="campo">
+                    <label for="titulo">Nome da ação ou projeto *</label>
+                    <input id="titulo" name="titulo" required
+                           placeholder="Ex.: Projeto de leitura">
+                </div>
+
+                <div class="campo">
+                    <label for="professor">Professor responsável *</label>
+                    <input id="professor" name="professor" required>
+                </div>
+
+                <div class="campo">
+                    <label for="escola">Escola *</label>
+                    <input id="escola" name="escola" required>
+                </div>
+
+                <div class="campo">
+                    <label for="turma">Turma / etapa da EJA</label>
+                    <input id="turma" name="turma"
+                           placeholder="Ex.: EJA - Etapa IV">
+                </div>
+
+                <div class="campo">
+                    <label for="data">Data da realização *</label>
+                    <input type="date" id="data" name="data" required>
+                </div>
+
+                <div class="campo">
+                    <label for="descricao">Descrição da ação *</label>
+                    <textarea id="descricao" name="descricao" required
+                              placeholder="Conte como a atividade foi realizada..."></textarea>
+                </div>
+
+                <div class="campo">
+                    <label for="fotos">Fotos da atividade</label>
+                    <input type="file" id="fotos" name="fotos"
+                           accept="image/*" multiple>
+                </div>
+
+                <div class="campo">
+                    <label for="documento">Projeto ou relatório em PDF</label>
+                    <input type="file" id="documento" name="documento"
+                           accept=".pdf,application/pdf">
+                </div>
+
+                <div class="acoes-formulario">
+                    <button class="botao-formulario" type="submit">
+                        Testar cadastro
+                    </button>
+                    <a class="botao-formulario botao-voltar"
+                       href="index.html">Voltar ao início</a>
+                </div>
+            </form>
+
+            <p class="aviso">
+                <strong>Atenção:</strong> esta é uma versão de teste.
+                Os dados e arquivos não serão enviados a um servidor nem
+                ficarão salvos permanentemente.
+            </p>
+
+            <div id="resultado" role="status" aria-live="polite"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 Portal EJA em Ação</p>
+    </footer>
+
+<script>
+const formulario = document.getElementById("formularioAcao");
+const resultado = document.getElementById("resultado");
+
+formulario.addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const titulo = document.getElementById("titulo").value.trim();
+    const professor = document.getElementById("professor").value.trim();
+    const escola = document.getElementById("escola").value.trim();
+    const turma = document.getElementById("turma").value.trim();
+    const data = document.getElementById("data").value;
+    const descricao = document.getElementById("descricao").value.trim();
+
+    const fotosSelecionadas = Array.from(
+        document.getElementById("fotos").files
+    );
+
+    const pdf = document.getElementById("documento").files[0];
+
+    const arquivos = [...fotosSelecionadas, ...(pdf ? [pdf] : [])];
+
+    const tamanhoTotal = arquivos.reduce(
+        (total, arquivo) => total + arquivo.size, 0
+    );
+
+    if (tamanhoTotal > 2 * 1024 * 1024) {
+        alert("Selecione arquivos que somem no máximo 2 MB.");
+        return;
+    }
+
+    const lerArquivo = arquivo => new Promise((resolve, reject) => {
+        if (!arquivo) {
+            resolve(null);
+            return;
+        }
+
+        const leitor = new FileReader();
+
+        leitor.onload = () => resolve({
+            nome: arquivo.name,
+            tipo: arquivo.type,
+            conteudo: leitor.result
+        });
+
+        leitor.onerror = () => reject(
+            new Error("Não foi possível ler um arquivo.")
+        );
+
+        leitor.readAsDataURL(arquivo);
+    });
+
+    Promise.all([
+        Promise.all(fotosSelecionadas.map(lerArquivo)),
+        lerArquivo(pdf)
+    ]).then(([fotos, documento]) => {
+
+        const acao = {
+            id: Date.now().toString(),
+            titulo,
+            professor,
+            escola,
+            turma,
+            data,
+            descricao,
+            fotos,
+            documento,
+            status: "pendente",
+            criadaEm: new Date().toISOString()
+        };
+
+        try {
+            const registros = JSON.parse(
+                localStorage.getItem("eja_acoes") || "[]"
+            );
+
+            registros.push(acao);
+
+            localStorage.setItem(
+                "eja_acoes",
+                JSON.stringify(registros)
+            );
+
+            resultado.replaceChildren();
+
+            const mensagem = document.createElement("p");
+
+            mensagem.style.cssText =
+                "margin-top:20px;padding:15px;background:#fef3c7;" +
+                "color:#92400e;border-radius:8px;line-height:1.6";
+
+            mensagem.textContent =
+                "Cadastro recebido com sucesso! A ação \"" +
+                titulo +
+                "\" está pendente de aprovação pela administração.";
+
+            resultado.appendChild(mensagem);
+            formulario.reset();
+
+        } catch (erro) {
+            alert(
+                "Não foi possível salvar. Tente arquivos menores ou menos fotos."
+            );
+        }
+
+    }).catch(() => {
+        alert("Não foi possível ler os arquivos selecionados.");
+    });
+});
+</script>
+
+
+    
+</body>
+</html>

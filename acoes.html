@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ações e Projetos | Portal EJA em Ação</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .pagina-acoes {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .pagina-acoes h2 {
+            color: #155e75;
+            margin-bottom: 12px;
+        }
+
+        .grade-acoes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 28px;
+        }
+
+        .cartao-acao {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 4px 14px rgba(0,0,0,.08);
+            overflow-wrap: anywhere;
+        }
+
+        .cartao-acao h3 {
+            color: #155e75;
+            margin-bottom: 14px;
+        }
+
+        .cartao-acao p {
+            line-height: 1.6;
+            margin: 8px 0;
+        }
+
+        .galeria-fotos {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .galeria-fotos img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .link-arquivo {
+            display: inline-block;
+            margin-top: 12px;
+            color: #0e7490;
+            font-weight: bold;
+        }
+
+        .mensagem-vazia {
+            background: white;
+            padding: 24px;
+            margin-top: 25px;
+            border-radius: 10px;
+            line-height: 1.6;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-top: 20px;
+            color: #0e7490;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="cabecalho">
+        <div class="logo">
+            <h1>PORTAL EJA EM AÇÃO</h1>
+            <p>Educação, participação e transformação</p>
+        </div>
+    </header>
+
+    <main class="pagina-acoes">
+        <h2>Ações e Projetos</h2>
+        <p>Conheça as atividades registradas pelos professores.</p>
+
+        <div id="listaAcoes" class="grade-acoes"></div>
+
+        <p id="estadoVazio" class="mensagem-vazia" hidden>
+            Nenhuma ação foi encontrada neste navegador.
+            Cadastre uma ação para começar a montar sua galeria.
+        </p>
+
+        <a class="voltar" href="index.html">← Voltar à página inicial</a>
+    </main>
+
+    <footer>
+        <p>© 2026 Portal EJA em Ação</p>
+    </footer>
+
+    
+<script>
+const lista = document.getElementById("listaAcoes");
+const estadoVazio = document.getElementById("estadoVazio");
+
+function criarElemento(tag, texto, classe) {
+    const elemento = document.createElement(tag);
+
+    if (texto !== undefined) {
+        elemento.textContent = texto;
+    }
+
+    if (classe) {
+        elemento.className = classe;
+    }
+
+    return elemento;
+}
+
+try {
+    const registros = JSON.parse(
+        localStorage.getItem("eja_acoes") || "[]"
+    );
+
+    // Exibe somente ações aprovadas.
+    const acoes = registros.filter(
+        acao => acao.status === "aprovada"
+    );
+
+    estadoVazio.hidden = acoes.length > 0;
+
+    if (acoes.length === 0) {
+        estadoVazio.textContent =
+            "Ainda não há ações aprovadas para publicação.";
+    }
+
+    acoes.slice().reverse().forEach(acao => {
+        const cartao = criarElemento(
+            "article",
+            undefined,
+            "cartao-acao"
+        );
+
+        cartao.appendChild(criarElemento("h3", acao.titulo));
+        cartao.appendChild(criarElemento(
+            "p", "Professor: " + acao.professor
+        ));
+        cartao.appendChild(criarElemento(
+            "p", "Escola: " + acao.escola
+        ));
+
+        if (acao.turma) {
+            cartao.appendChild(criarElemento(
+                "p", "Turma: " + acao.turma
+            ));
+        }
+
+        if (acao.data) {
+            const dataFormatada = new Date(
+                acao.data + "T12:00:00"
+            ).toLocaleDateString("pt-BR");
+
+            cartao.appendChild(criarElemento(
+                "p", "Data: " + dataFormatada
+            ));
+        }
+
+        cartao.appendChild(criarElemento("p", acao.descricao));
+
+        if (acao.fotos && acao.fotos.length) {
+            const galeria = criarElemento(
+                "div", undefined, "galeria-fotos"
+            );
+
+            acao.fotos.forEach(foto => {
+                if (
+                    !foto.conteudo ||
+                    !foto.conteudo.startsWith("data:image/")
+                ) {
+                    return;
+                }
+
+                const imagem = document.createElement("img");
+                imagem.src = foto.conteudo;
+                imagem.alt = "Foto da ação: " + acao.titulo;
+                galeria.appendChild(imagem);
+            });
+
+            if (galeria.childElementCount > 0) {
+                cartao.appendChild(galeria);
+            }
+        }
+
+        if (
+            acao.documento &&
+            acao.documento.conteudo &&
+            acao.documento.conteudo.startsWith(
+                "data:application/pdf"
+            )
+        ) {
+            const link = document.createElement("a");
+            link.href = acao.documento.conteudo;
+            link.download = acao.documento.nome || "documento.pdf";
+            link.textContent = "📄 Abrir ou baixar PDF";
+            link.className = "link-arquivo";
+            cartao.appendChild(link);
+        }
+
+        lista.appendChild(cartao);
+    });
+
+} catch (erro) {
+    estadoVazio.hidden = false;
+    estadoVazio.textContent =
+        "Não foi possível ler os cadastros salvos neste navegador.";
+}
+</script>
+
+</body>
+</html>

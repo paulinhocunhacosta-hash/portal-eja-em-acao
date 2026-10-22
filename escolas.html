@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escolas | Portal EJA em Ação</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+.pagina-escolas{
+max-width:1100px;
+margin:40px auto;
+padding:20px;
+}
+
+.grade-escolas{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:22px;
+margin-top:25px;
+}
+
+.cartao-escola{
+background:#fff;
+padding:22px;
+border-radius:12px;
+box-shadow:0 4px 14px rgba(0,0,0,.08);
+cursor:pointer;
+transition:.3s;
+}
+
+.cartao-escola:hover{
+transform:translateY(-4px);
+}
+
+.cartao-escola h3{
+color:#155e75;
+margin-bottom:10px;
+}
+
+.cartao-escola p{
+line-height:1.6;
+}
+</style>
+</head>
+
+<body>
+
+<header class="cabecalho">
+<div class="logo">
+<h1>PORTAL EJA EM AÇÃO</h1>
+<p>Educação, participação e transformação</p>
+</div>
+
+<nav>
+<a href="index.html">Início</a>
+<a href="acoes.html">Ações</a>
+<a href="materiais.html">Materiais</a>
+</nav>
+</header>
+
+<main class="pagina-escolas">
+
+<h2>Escolas da Rede Municipal</h2>
+
+<p>Selecione uma escola para visualizar todas as ações aprovadas.</p>
+
+<div id="listaEscolas" class="grade-escolas"></div>
+
+</main>
+
+<footer>
+<p>© 2026 Portal EJA em Ação</p>
+</footer>
+
+<script>
+const lista=document.getElementById("listaEscolas");
+
+const registros=JSON.parse(localStorage.getItem("eja_acoes")||"[]");
+
+const aprovadas=registros.filter(a=>a.status==="aprovada");
+
+const escolas=[...new Set(aprovadas.map(a=>a.escola))].sort();
+
+if(escolas.length===0){
+lista.innerHTML="<p>Ainda não há escolas com ações publicadas.</p>";
+}
+
+escolas.forEach(nome=>{
+
+const quantidade=aprovadas.filter(a=>a.escola===nome).length;
+
+const cartao=document.createElement("div");
+cartao.className="cartao-escola";
+
+cartao.innerHTML=`
+<h3>${nome}</h3>
+<p>${quantidade} ação(ões) publicada(s).</p>
+`;
+
+cartao.onclick=function(){
+window.location.href="escola.html?nome="+encodeURIComponent(nome);
+};
+
+lista.appendChild(cartao);
+
+});
+</script>
+
+</body>
+</html>

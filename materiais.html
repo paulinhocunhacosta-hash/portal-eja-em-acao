@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materiais Pedagógicos | Portal EJA em Ação</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .pagina-materiais {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .pagina-materiais h2 {
+            color: #155e75;
+            margin-bottom: 12px;
+        }
+
+        .introducao-materiais {
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .lista-materiais {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 22px;
+            margin-top: 25px;
+        }
+
+        .cartao-material {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            overflow-wrap: anywhere;
+        }
+
+        .cartao-material h3 {
+            color: #155e75;
+            margin-bottom: 12px;
+        }
+
+        .cartao-material p {
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .botao-material {
+            display: inline-block;
+            background: #0e7490;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .botao-material:hover {
+            background: #155e75;
+        }
+
+        .mensagem-vazia {
+            background: #f0f9ff;
+            border-left: 4px solid #0e7490;
+            padding: 18px;
+            border-radius: 6px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Portal EJA em Ação</h1>
+        <p>Educação de Jovens e Adultos</p>
+
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="acoes.html">Ações e Projetos</a>
+            <a href="materiais.html">Materiais</a>
+            <a href="cadastro.html">Cadastrar ação</a>
+        </nav>
+    </header>
+
+    <main class="pagina-materiais">
+        <h2>Materiais Pedagógicos</h2>
+
+        <p class="introducao-materiais">
+            Este espaço reúne materiais pedagógicos destinados a apoiar
+            o planejamento docente e o desenvolvimento das práticas
+            educativas na Educação de Jovens e Adultos (EJA).
+            Os documentos serão disponibilizados após a aprovação
+            da administração do portal.
+        </p>
+
+        <div id="listaMateriais" class="lista-materiais"></div>
+    </main>
+
+    <footer>
+        <p>Portal EJA em Ação — Educação, participação e transformação.</p>
+    </footer>
+
+    <script>
+        const listaMateriais = document.getElementById("listaMateriais");
+
+        function exibirMateriais() {
+            listaMateriais.replaceChildren();
+
+            let materiais = [];
+
+            try {
+                materiais = JSON.parse(
+                    localStorage.getItem("eja_materiais") || "[]"
+                );
+            } catch (erro) {
+                materiais = [];
+            }
+
+            const aprovados = materiais.filter(
+                material =>
+                    material.status === "aprovado" &&
+                    material.arquivo &&
+                    material.nomeArquivo
+            );
+
+            if (aprovados.length === 0) {
+                const mensagem = document.createElement("p");
+                mensagem.className = "mensagem-vazia";
+                mensagem.textContent =
+                    "Ainda não há materiais pedagógicos aprovados para publicação. Volte em breve para conferir as novidades.";
+
+                listaMateriais.appendChild(mensagem);
+                return;
+            }
+
+            aprovados.forEach(material => {
+                const cartao = document.createElement("article");
+                cartao.className = "cartao-material";
+
+                const titulo = document.createElement("h3");
+                titulo.textContent = material.titulo || "Material pedagógico";
+
+                const categoria = document.createElement("p");
+                categoria.textContent =
+                    "Categoria: " + (material.categoria || "Geral");
+
+                const descricao = document.createElement("p");
+                descricao.textContent =
+                    material.descricao || "Material de apoio pedagógico.";
+
+                const arquivo = document.createElement("p");
+                arquivo.textContent = "Arquivo: " + material.nomeArquivo;
+
+                const link = document.createElement("a");
+                link.className = "botao-material";
+                link.href = material.arquivo;
+                link.download = material.nomeArquivo;
+                link.textContent = "Baixar PDF";
+
+                cartao.appendChild(titulo);
+                cartao.appendChild(categoria);
+                cartao.appendChild(descricao);
+                cartao.appendChild(arquivo);
+                cartao.appendChild(link);
+
+                listaMateriais.appendChild(cartao);
+            });
+        }
+
+        exibirMateriais();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ações da Escola | Portal EJA em Ação</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .pagina-escola {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .cabecalho-escola {
+            background: #e0f2fe;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .cabecalho-escola h2 {
+            color: #155e75;
+            margin-bottom: 10px;
+            overflow-wrap: anywhere;
+        }
+
+        .grade-acoes-escola {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .cartao-acao-escola {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            overflow-wrap: anywhere;
+        }
+
+        .cartao-acao-escola h3 {
+            color: #155e75;
+            margin-bottom: 12px;
+        }
+
+        .cartao-acao-escola p {
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .fotos-acao {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .fotos-acao img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .link-documento {
+            display: inline-block;
+            margin-top: 10px;
+            background: #0e7490;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+        .mensagem-escola {
+            background: #f0f9ff;
+            padding: 18px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .voltar-escolas {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #0e7490;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="cabecalho">
+    <div class="logo">
+        <h1>PORTAL EJA EM AÇÃO</h1>
+        <p>Educação, participação e transformação</p>
+    </div>
+
+    <nav>
+        <a href="index.html">Início</a>
+        <a href="acoes.html">Ações e Projetos</a>
+        <a href="escolas.html">Escolas</a>
+        <a href="materiais.html">Materiais</a>
+    </nav>
+</header>
+
+<main class="pagina-escola">
+
+    <a class="voltar-escolas" href="escolas.html">← Voltar para as escolas</a>
+
+    <section class="cabecalho-escola">
+        <h2 id="nomeEscola">Ações da escola</h2>
+        <p id="resumoEscola">Conheça as experiências desenvolvidas na EJA.</p>
+    </section>
+
+    <div id="listaAcoesEscola" class="grade-acoes-escola"></div>
+
+</main>
+
+<footer>
+    <p>© 2026 Portal EJA em Ação</p>
+</footer>
+
+<script>
+(function () {
+    const parametros = new URLSearchParams(window.location.search);
+    const nomeEscola = parametros.get("nome");
+
+    const titulo = document.getElementById("nomeEscola");
+    const resumo = document.getElementById("resumoEscola");
+    const lista = document.getElementById("listaAcoesEscola");
+
+    function elemento(tag, texto, classe) {
+        const el = document.createElement(tag);
+        el.textContent = texto;
+
+        if (classe) {
+            el.className = classe;
+        }
+
+        return el;
+    }
+
+    if (!nomeEscola) {
+        titulo.textContent = "Escola não selecionada";
+        resumo.textContent = "Volte à página de escolas e selecione uma escola.";
+        lista.appendChild(
+            elemento("p", "Nenhuma escola foi informada.", "mensagem-escola")
+        );
+        return;
+    }
+
+    titulo.textContent = nomeEscola;
+
+    let registros = [];
+
+    try {
+        const dados = JSON.parse(localStorage.getItem("eja_acoes") || "[]");
+        registros = Array.isArray(dados) ? dados : [];
+    } catch (erro) {
+        registros = [];
+    }
+
+    const acoes = registros.filter(acao =>
+        acao.status === "aprovada" &&
+        acao.escola === nomeEscola
+    );
+
+    resumo.textContent = acoes.length === 1
+        ? "Esta escola possui 1 ação publicada."
+        : "Esta escola possui " + acoes.length + " ações publicadas.";
+
+    if (acoes.length === 0) {
+        lista.appendChild(
+            elemento(
+                "p",
+                "Não há ações aprovadas para esta escola no momento.",
+                "mensagem-escola"
+            )
+        );
+        return;
+    }
+
+    acoes.slice().reverse().forEach(acao => {
+        const cartao = document.createElement("article");
+        cartao.className = "cartao-acao-escola";
+
+        cartao.appendChild(
+            elemento("h3", acao.titulo || "Ação sem título")
+        );
+
+        cartao.appendChild(
+            elemento("p", "Professor(a): " + (acao.professor || "Não informado"))
+        );
+
+        if (acao.turma) {
+            cartao.appendChild(
+                elemento("p", "Turma: " + acao.turma)
+            );
+        }
+
+        if (acao.data) {
+            cartao.appendChild(
+                elemento("p", "Data: " + acao.data)
+            );
+        }
+
+        cartao.appendChild(
+            elemento("p", acao.descricao || "Sem descrição.")
+        );
+
+        if (Array.isArray(acao.fotos) && acao.fotos.length > 0) {
+            const galeria = document.createElement("div");
+            galeria.className = "fotos-acao";
+
+            acao.fotos.forEach(foto => {
+                if (typeof foto !== "string" || !foto.startsWith("data:image/")) {
+                    return;
+                }
+
+                const imagem = document.createElement("img");
+                imagem.src = foto;
+                imagem.alt = "Foto da ação pedagógica";
+                imagem.loading = "lazy";
+                galeria.appendChild(imagem);
+            });
+
+            if (galeria.childElementCount > 0) {
+                cartao.appendChild(galeria);
+            }
+        }
+
+        if (
+            typeof acao.documento === "string" &&
+            acao.documento.startsWith("data:application/pdf")
+        ) {
+            const link = document.createElement("a");
+            link.className = "link-documento";
+            link.href = acao.documento;
+            link.download = "documento-acao.pdf";
+            link.textContent = "Baixar documento PDF";
+            cartao.appendChild(link);
+        }
+
+        lista.appendChild(cartao);
+    });
+})();
+</script>
+
+</body>
+</html>
