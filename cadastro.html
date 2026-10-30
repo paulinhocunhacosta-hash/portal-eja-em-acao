@@ -2,295 +2,301 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastrar Ação | Portal EJA em Ação</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .formulario-pagina {
-            max-width: 850px;
-            margin: 40px auto;
-            padding: 30px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 18px rgba(0,0,0,.08);
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Ações | Portal EJA em Ação</title>
 
-        .formulario-pagina h2 {
-            color: #155e75;
-            margin-bottom: 12px;
-        }
+  <script
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    async defer>
+  </script>
 
-        .formulario-pagina .introducao {
-            margin-bottom: 25px;
-            line-height: 1.6;
-            color: #555;
-        }
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-        .campo {
-            margin-bottom: 20px;
-        }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 25px 15px;
+      color: #333;
+    }
 
-        .campo label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
+    .container {
+      max-width: 750px;
+      margin: 20px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.08);
+    }
 
-        .campo input,
-        .campo select,
-        .campo textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            font: inherit;
-        }
+    h1 {
+      color: #155e75;
+      text-align: center;
+      font-size: 25px;
+    }
 
-        .campo textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
+    .subtitulo {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 30px;
+    }
 
-        .acoes-formulario {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-        }
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 17px 0 7px;
+    }
 
-        .botao-formulario {
-            display: inline-block;
-            padding: 13px 20px;
-            border: none;
-            border-radius: 7px;
-            background: #0e7490;
-            color: white;
-            font-weight: bold;
-            font-size: 15px;
-            text-decoration: none;
-            cursor: pointer;
-        }
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      font-size: 15px;
+    }
 
-        .botao-voltar {
-            background: #e2e8f0;
-            color: #12343b;
-        }
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
 
-        .aviso {
-            margin-top: 20px;
-            padding: 12px;
-            background: #fef3c7;
-            border-radius: 7px;
-            line-height: 1.5;
-        }
+    small {
+      color: #64748b;
+      display: block;
+      margin-top: 6px;
+    }
 
-        @media (max-width: 600px) {
-            .formulario-pagina {
-                margin: 20px 12px;
-                padding: 20px;
-            }
-        }
-    </style>
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 25px;
+      background: #155e75;
+      color: white;
+      border: none;
+      border-radius: 7px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    #resultado {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 7px;
+      display: none;
+      line-height: 1.5;
+    }
+
+    .aviso {
+      background: #ecfeff;
+      border-left: 4px solid #0891b2;
+      padding: 12px;
+      margin-top: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .voltar {
+      display: block;
+      text-align: center;
+      margin-top: 22px;
+      color: #155e75;
+    }
+  </style>
 </head>
 
 <body>
-    <header class="cabecalho">
-        <div class="logo">
-            <h1>PORTAL EJA EM AÇÃO</h1>
-            <p>Educação, participação e transformação</p>
-        </div>
-    </header>
 
-    <main>
-        <section class="formulario-pagina">
-            <h2>Cadastrar uma nova ação</h2>
-            <p class="introducao">
-                Preencha os dados abaixo para registrar uma atividade
-                ou projeto desenvolvido na Educação de Jovens e Adultos.
-            </p>
+  <main class="container">
 
-            <form id="formularioAcao">
-                <div class="campo">
-                    <label for="titulo">Nome da ação ou projeto *</label>
-                    <input id="titulo" name="titulo" required
-                           placeholder="Ex.: Projeto de leitura">
-                </div>
+    <h1>PORTAL EJA EM AÇÃO</h1>
 
-                <div class="campo">
-                    <label for="professor">Professor responsável *</label>
-                    <input id="professor" name="professor" required>
-                </div>
+    <p class="subtitulo">
+      Cadastro de Ações e Projetos Pedagógicos
+    </p>
 
-                <div class="campo">
-                    <label for="escola">Escola *</label>
-                    <input id="escola" name="escola" required>
-                </div>
+    <form id="formularioAcao">
 
-                <div class="campo">
-                    <label for="turma">Turma / etapa da EJA</label>
-                    <input id="turma" name="turma"
-                           placeholder="Ex.: EJA - Etapa IV">
-                </div>
+      <label for="titulo">Título da ação ou projeto *</label>
+      <input type="text" id="titulo" name="titulo"
+        maxlength="200" required>
 
-                <div class="campo">
-                    <label for="data">Data da realização *</label>
-                    <input type="date" id="data" name="data" required>
-                </div>
+      <label for="professor">Nome do professor responsável *</label>
+      <input type="text" id="professor" name="professor"
+        maxlength="150" required>
 
-                <div class="campo">
-                    <label for="descricao">Descrição da ação *</label>
-                    <textarea id="descricao" name="descricao" required
-                              placeholder="Conte como a atividade foi realizada..."></textarea>
-                </div>
+      <label for="escola">Escola *</label>
+      <input type="text" id="escola" name="escola"
+        maxlength="200" required>
 
-                <div class="campo">
-                    <label for="fotos">Fotos da atividade</label>
-                    <input type="file" id="fotos" name="fotos"
-                           accept="image/*" multiple>
-                </div>
+      <label for="turma">Turma</label>
+      <input type="text" id="turma" name="turma"
+        maxlength="100">
 
-                <div class="campo">
-                    <label for="documento">Projeto ou relatório em PDF</label>
-                    <input type="file" id="documento" name="documento"
-                           accept=".pdf,application/pdf">
-                </div>
+      <label for="data">Data da ação *</label>
+      <input type="date" id="data" name="data" required>
 
-                <div class="acoes-formulario">
-                    <button class="botao-formulario" type="submit">
-                        Testar cadastro
-                    </button>
-                    <a class="botao-formulario botao-voltar"
-                       href="index.html">Voltar ao início</a>
-                </div>
-            </form>
+      <label for="descricao">Descrição da ação ou projeto *</label>
+      <textarea id="descricao" name="descricao"
+        maxlength="10000" required></textarea>
 
-            <p class="aviso">
-                <strong>Atenção:</strong> esta é uma versão de teste.
-                Os dados e arquivos não serão enviados a um servidor nem
-                ficarão salvos permanentemente.
-            </p>
+      <label for="fotos">Fotos da ação</label>
+      <input type="file" id="fotos" name="fotos"
+        accept="image/jpeg,image/png,image/webp" multiple>
+      <small>Máximo de 10 fotos. Formatos JPG, PNG ou WEBP.</small>
 
-            <div id="resultado" role="status" aria-live="polite"></div>
-        </section>
-    </main>
+      <label for="documento">Documento em PDF</label>
+      <input type="file" id="documento" name="documento"
+        accept="application/pdf">
+      <small>Envie apenas um documento PDF.</small>
 
-    <footer>
-        <p>© 2026 Portal EJA em Ação</p>
-    </footer>
+      <div class="aviso">
+        <strong>Importante:</strong> seu cadastro será encaminhado
+        para análise da administração. A publicação acontecerá
+        somente após a aprovação.
+      </div>
 
-<script>
-const formulario = document.getElementById("formularioAcao");
-const resultado = document.getElementById("resultado");
+      <label>Verificação de segurança *</label>
 
-formulario.addEventListener("submit", function(event) {
-    event.preventDefault();
+      <div class="cf-turnstile"
+        data-sitekey="0x4AAAAAAFoRspDRFyApHIJD">
+      </div>
 
-    const titulo = document.getElementById("titulo").value.trim();
-    const professor = document.getElementById("professor").value.trim();
-    const escola = document.getElementById("escola").value.trim();
-    const turma = document.getElementById("turma").value.trim();
-    const data = document.getElementById("data").value;
-    const descricao = document.getElementById("descricao").value.trim();
+      <button type="submit" id="botaoEnviar">
+        Enviar cadastro para aprovação
+      </button>
 
-    const fotosSelecionadas = Array.from(
-        document.getElementById("fotos").files
-    );
+      <div id="resultado" role="status" aria-live="polite"></div>
 
-    const pdf = document.getElementById("documento").files[0];
+    </form>
 
-    const arquivos = [...fotosSelecionadas, ...(pdf ? [pdf] : [])];
+    <a class="voltar" href="index.html">Voltar ao início</a>
 
-    const tamanhoTotal = arquivos.reduce(
-        (total, arquivo) => total + arquivo.size, 0
-    );
+  </main>
 
-    if (tamanhoTotal > 2 * 1024 * 1024) {
-        alert("Selecione arquivos que somem no máximo 2 MB.");
+  <script>
+    const ENDPOINT =
+      "https://kzdwippnnnpyomgsvpnj.supabase.co/functions/v1/receber-cadastro-eja";
+
+    const CHAVE_PUBLICA =
+      "sb_publishable_8UQ_h6SyDMfYYlrmY8OPJw_G6-U-0pK";
+
+    const formulario = document.getElementById("formularioAcao");
+    const botao = document.getElementById("botaoEnviar");
+    const resultado = document.getElementById("resultado");
+
+    formulario.addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      resultado.style.display = "none";
+
+      const fotos = document.getElementById("fotos").files;
+      const documento = document.getElementById("documento").files[0];
+
+      if (fotos.length > 10) {
+        mostrarMensagem("Envie no máximo 10 fotos.", false);
         return;
-    }
+      }
 
-    const lerArquivo = arquivo => new Promise((resolve, reject) => {
-        if (!arquivo) {
-            resolve(null);
-            return;
+      const arquivos = [...fotos];
+
+      if (documento) {
+        arquivos.push(documento);
+      }
+
+      const tamanhoTotal = arquivos.reduce(
+        (total, arquivo) => total + arquivo.size, 0
+      );
+
+      if (tamanhoTotal > 2 * 1024 * 1024) {
+        mostrarMensagem("O tamanho total dos arquivos não pode ultrapassar 2 MB.", false);
+        return;
+      }
+
+      for (const foto of fotos) {
+        if (!["image/jpeg", "image/png", "image/webp"].includes(foto.type)) {
+          mostrarMensagem("Use somente fotos JPG, PNG ou WEBP.", false);
+          return;
         }
+      }
 
-        const leitor = new FileReader();
+      if (documento && documento.type !== "application/pdf") {
+        mostrarMensagem("O documento deve estar em formato PDF.", false);
+        return;
+      }
 
-        leitor.onload = () => resolve({
-            nome: arquivo.name,
-            tipo: arquivo.type,
-            conteudo: leitor.result
+      const token = document.querySelector(
+        '[name="cf-turnstile-response"]'
+      )?.value;
+
+      if (!token) {
+        mostrarMensagem("Conclua a verificação de segurança.", false);
+        return;
+      }
+
+      const dados = new FormData(formulario);
+
+      botao.disabled = true;
+      botao.textContent = "Enviando cadastro...";
+
+      try {
+        const resposta = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: {
+            "apikey": CHAVE_PUBLICA
+          },
+          body: dados
         });
 
-        leitor.onerror = () => reject(
-            new Error("Não foi possível ler um arquivo.")
-        );
+        const retorno = await resposta.json();
 
-        leitor.readAsDataURL(arquivo);
-    });
-
-    Promise.all([
-        Promise.all(fotosSelecionadas.map(lerArquivo)),
-        lerArquivo(pdf)
-    ]).then(([fotos, documento]) => {
-
-        const acao = {
-            id: Date.now().toString(),
-            titulo,
-            professor,
-            escola,
-            turma,
-            data,
-            descricao,
-            fotos,
-            documento,
-            status: "pendente",
-            criadaEm: new Date().toISOString()
-        };
-
-        try {
-            const registros = JSON.parse(
-                localStorage.getItem("eja_acoes") || "[]"
-            );
-
-            registros.push(acao);
-
-            localStorage.setItem(
-                "eja_acoes",
-                JSON.stringify(registros)
-            );
-
-            resultado.replaceChildren();
-
-            const mensagem = document.createElement("p");
-
-            mensagem.style.cssText =
-                "margin-top:20px;padding:15px;background:#fef3c7;" +
-                "color:#92400e;border-radius:8px;line-height:1.6";
-
-            mensagem.textContent =
-                "Cadastro recebido com sucesso! A ação \"" +
-                titulo +
-                "\" está pendente de aprovação pela administração.";
-
-            resultado.appendChild(mensagem);
-            formulario.reset();
-
-        } catch (erro) {
-            alert(
-                "Não foi possível salvar. Tente arquivos menores ou menos fotos."
-            );
+        if (!resposta.ok || !retorno.sucesso) {
+          throw new Error(retorno.erro || "Não foi possível enviar o cadastro.");
         }
 
-    }).catch(() => {
-        alert("Não foi possível ler os arquivos selecionados.");
+        mostrarMensagem(
+          "Cadastro enviado com sucesso! Ele ficará aguardando a aprovação da administração.",
+          true
+        );
+
+        formulario.reset();
+
+        if (window.turnstile) {
+          window.turnstile.reset();
+        }
+
+      } catch (erro) {
+        mostrarMensagem(
+          erro.message || "Erro ao enviar. Tente novamente.",
+          false
+        );
+
+        if (window.turnstile) {
+          window.turnstile.reset();
+        }
+
+      } finally {
+        botao.disabled = false;
+        botao.textContent = "Enviar cadastro para aprovação";
+      }
     });
-});
-</script>
 
+    function mostrarMensagem(mensagem, sucesso) {
+      resultado.textContent = mensagem;
+      resultado.style.display = "block";
+      resultado.style.background = sucesso ? "#dcfce7" : "#fee2e2";
+      resultado.style.color = sucesso ? "#166534" : "#991b1b";
+    }
+  </script>
 
-    
 </body>
 </html>
