@@ -83,6 +83,37 @@ async function verificarLink() {
   const mensagem = document.getElementById("mensagem");
   const formulario = document.getElementById("formulario");
 
+  mensagem.textContent = "Verificando o link de recuperação...";
+
+  const parametros = new URLSearchParams(window.location.search);
+  const codigo = parametros.get("code");
+
+  if (codigo) {
+    const { error } =
+      await supabaseClient.auth.exchangeCodeForSession(codigo);
+
+    if (error) {
+      mensagem.textContent =
+        "O link é inválido ou expirou. Será necessário solicitar outro.";
+      return;
+    }
+  }
+
+  const { data, error } =
+    await supabaseClient.auth.getSession();
+
+  if (error || !data.session) {
+    mensagem.textContent =
+      "Link inválido ou expirado. Solicite uma nova recuperação.";
+    return;
+  }
+
+  mensagem.textContent = "Link válido! Cadastre sua nova senha.";
+  formulario.style.display = "block";
+}
+  const mensagem = document.getElementById("mensagem");
+  const formulario = document.getElementById("formulario");
+
   const { data, error } = await supabaseClient.auth.getSession();
 
   if (error || !data.session) {
