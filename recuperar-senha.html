@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar senha | Portal EJA em Ação</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      margin: 0;
+      padding: 30px 15px;
+    }
+    .container {
+      max-width: 420px;
+      margin: 60px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 3px 15px #0002;
+    }
+    h2 {
+      color: #155e75;
+      text-align: center;
+    }
+    p { text-align: center; color: #555; }
+    input, button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 12px;
+      box-sizing: border-box;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    input { border: 1px solid #ccc; }
+    button {
+      background: #155e75;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #mensagem {
+      margin-top: 15px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Recuperar senha</h2>
+  <p>Cadastre uma nova senha para acessar a administração do Portal EJA em Ação.</p>
+
+  <div id="formulario" style="display:none;">
+    <form id="formSenha">
+      <input
+        type="password"
+        id="senha"
+        placeholder="Nova senha"
+        minlength="8"
+        required
+      >
+      <input
+        type="password"
+        id="confirmar"
+        placeholder="Confirme a nova senha"
+        minlength="8"
+        required
+      >
+      <button type="submit">Salvar nova senha</button>
+    </form>
+  </div>
+
+  <div id="mensagem">Verificando o link de recuperação...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+
+<script>
+async function verificarLink() {
+  const mensagem = document.getElementById("mensagem");
+  const formulario = document.getElementById("formulario");
+
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error || !data.session) {
+    mensagem.textContent =
+      "Link inválido ou expirado. Solicite um novo e-mail de recuperação.";
+    return;
+  }
+
+  mensagem.textContent = "Link válido. Cadastre sua nova senha.";
+  formulario.style.display = "block";
+}
+
+document.getElementById("formSenha").addEventListener("submit", async function(event) {
+  event.preventDefault();
+
+  const senha = document.getElementById("senha").value;
+  const confirmar = document.getElementById("confirmar").value;
+  const mensagem = document.getElementById("mensagem");
+
+  if (senha.length < 8) {
+    mensagem.textContent = "A senha precisa ter pelo menos 8 caracteres.";
+    return;
+  }
+
+  if (senha !== confirmar) {
+    mensagem.textContent = "As senhas não são iguais.";
+    return;
+  }
+
+  mensagem.textContent = "Salvando nova senha...";
+
+  const { error } = await supabaseClient.auth.updateUser({
+    password: senha
+  });
+
+  if (error) {
+    mensagem.textContent = "Não foi possível atualizar: " + error.message;
+    return;
+  }
+
+  mensagem.textContent =
+    "Senha atualizada com sucesso! Você já pode acessar o painel administrativo.";
+
+  document.getElementById("formulario").style.display = "none";
+
+  setTimeout(() => {
+    window.location.href = "admin.html";
+  }, 3000);
+});
+
+verificarLink();
+</script>
+
+</body>
+</html>
