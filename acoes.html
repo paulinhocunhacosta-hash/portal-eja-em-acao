@@ -96,135 +96,190 @@
 
         <div id="listaAcoes" class="grade-acoes"></div>
 
-        <p id="estadoVazio" class="mensagem-vazia" hidden>
-            Nenhuma ação foi encontrada neste navegador.
-            Cadastre uma ação para começar a montar sua galeria.
+        <p id="estadoVazio" class="mensagem-vazia">
+            Carregando ações e projetos...
         </p>
 
-        <a class="voltar" href="index.html">← Voltar à página inicial</a>
+        <a class="voltar" href="index.html">
+            ← Voltar à página inicial
+        </a>
     </main>
 
     <footer>
         <p>© 2026 Portal EJA em Ação</p>
     </footer>
 
-    
-<script>
-const lista = document.getElementById("listaAcoes");
-const estadoVazio = document.getElementById("estadoVazio");
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
 
-function criarElemento(tag, texto, classe) {
-    const elemento = document.createElement(tag);
+    <script>
+    const lista = document.getElementById("listaAcoes");
+    const estadoVazio = document.getElementById("estadoVazio");
 
-    if (texto !== undefined) {
-        elemento.textContent = texto;
-    }
+    function criarElemento(tag, texto, classe) {
+        const elemento = document.createElement(tag);
 
-    if (classe) {
-        elemento.className = classe;
-    }
-
-    return elemento;
-}
-
-try {
-    const registros = JSON.parse(
-        localStorage.getItem("eja_acoes") || "[]"
-    );
-
-    // Exibe somente ações aprovadas.
-    const acoes = registros.filter(
-        acao => acao.status === "aprovada"
-    );
-
-    estadoVazio.hidden = acoes.length > 0;
-
-    if (acoes.length === 0) {
-        estadoVazio.textContent =
-            "Ainda não há ações aprovadas para publicação.";
-    }
-
-    acoes.slice().reverse().forEach(acao => {
-        const cartao = criarElemento(
-            "article",
-            undefined,
-            "cartao-acao"
-        );
-
-        cartao.appendChild(criarElemento("h3", acao.titulo));
-        cartao.appendChild(criarElemento(
-            "p", "Professor: " + acao.professor
-        ));
-        cartao.appendChild(criarElemento(
-            "p", "Escola: " + acao.escola
-        ));
-
-        if (acao.turma) {
-            cartao.appendChild(criarElemento(
-                "p", "Turma: " + acao.turma
-            ));
+        if (texto !== undefined && texto !== null) {
+            elemento.textContent = texto;
         }
 
-        if (acao.data) {
-            const dataFormatada = new Date(
-                acao.data + "T12:00:00"
-            ).toLocaleDateString("pt-BR");
-
-            cartao.appendChild(criarElemento(
-                "p", "Data: " + dataFormatada
-            ));
+        if (classe) {
+            elemento.className = classe;
         }
 
-        cartao.appendChild(criarElemento("p", acao.descricao));
+        return elemento;
+    }
 
-        if (acao.fotos && acao.fotos.length) {
-            const galeria = criarElemento(
-                "div", undefined, "galeria-fotos"
-            );
+    async function carregarAcoes() {
+        lista.replaceChildren();
+        estadoVazio.hidden = false;
+        estadoVazio.textContent = "Carregando ações e projetos...";
 
-            acao.fotos.forEach(foto => {
-                if (
-                    !foto.conteudo ||
-                    !foto.conteudo.startsWith("data:image/")
-                ) {
-                    return;
+        try {
+            const { data: acoes, error } = await supabaseClient
+                .from("acoes")
+                .select("*")
+                .eq("status", "aprovada")
+                .order("criado_em", { ascending: false });
+
+            if (error) {
+                throw error;
+            }
+
+            if (!acoes || acoes.length === 0) {
+                estadoVazio.textContent =
+                    "Ainda não há ações aprovadas para publicação.";
+                return;
+            }
+
+            estadoVazio.hidden = true;
+
+            for (const acao of acoes) {
+                const cartao = criarElemento(
+                    "article",
+                    undefined,
+                    "cartao-acao"
+                );
+
+                cartao.appendChild(
+                    criarElemento("h3", acao.titulo)
+                );
+
+                cartao.appendChild(
+                    criarElemento(
+                        "p",
+                        "Professor: " + (acao.professor || "")
+                    )
+                );
+
+                cartao.appendChild(
+                    criarElemento(
+                        "p",
+                        "Escola: " + (acao.escola || "")
+                    )
+                );
+
+                if (acao.turma) {
+                    cartao.appendChild(
+                        criarElemento("p", "Turma: " + acao.turma)
+                    );
                 }
 
-                const imagem = document.createElement("img");
-                imagem.src = foto.conteudo;
-                imagem.alt = "Foto da ação: " + acao.titulo;
-                galeria.appendChild(imagem);
-            });
+                if (acao.data_acao) {
+                    const dataFormatada = new Date(
+                        acao.data_acao + "T12:00:00"
+                    ).toLocaleDateString("pt-BR");
 
-            if (galeria.childElementCount > 0) {
-                cartao.appendChild(galeria);
+                    cartao.appendChild(
+                        criarElemento("p", "Data: " + dataFormatada)
+                    );
+                }
+
+                cartao.appendChild(
+                    criarElemento("p", acao.descricao || "")
+                );
+
+                // Carregar fotos do armazenamento privado.
+                if (Array.isArray(acao.fotos) && acao.fotos.length) {
+                    const galeria = criarElemento(
+                        "div",
+                        undefined,
+                        "galeria-fotos"
+                    );
+
+                    for (const foto of acao.fotos) {
+                        const caminho =
+                            typeof foto === "string"
+                                ? foto
+                                : foto?.path;
+
+                        if (!caminho) continue;
+
+                        const { data, error } =
+                            await supabaseClient.storage
+                                .from("arquivos")
+                                .createSignedUrl(caminho, 3600);
+
+                        if (error || !data?.signedUrl) {
+                            console.warn(
+                                "Não foi possível carregar uma foto:",
+                                error
+                            );
+                            continue;
+                        }
+
+                        const imagem = document.createElement("img");
+                        imagem.src = data.signedUrl;
+                        imagem.alt = "Foto da ação: " + (acao.titulo || "");
+                        imagem.loading = "lazy";
+
+                        galeria.appendChild(imagem);
+                    }
+
+                    if (galeria.childElementCount > 0) {
+                        cartao.appendChild(galeria);
+                    }
+                }
+
+                // Carregar documento PDF do armazenamento privado.
+                if (acao.documento_url) {
+                    const { data, error } =
+                        await supabaseClient.storage
+                            .from("arquivos")
+                            .createSignedUrl(acao.documento_url, 3600);
+
+                    if (!error && data?.signedUrl) {
+                        const link = document.createElement("a");
+
+                        link.href = data.signedUrl;
+                        link.target = "_blank";
+                        link.rel = "noopener noreferrer";
+                        link.textContent = "📄 Abrir ou baixar PDF";
+                        link.className = "link-arquivo";
+
+                        cartao.appendChild(link);
+                    } else {
+                        console.warn(
+                            "Não foi possível carregar o PDF:",
+                            error
+                        );
+                    }
+                }
+
+                lista.appendChild(cartao);
             }
+
+        } catch (erro) {
+            console.error("Erro ao carregar ações:", erro);
+
+            estadoVazio.hidden = false;
+            estadoVazio.textContent =
+                "Não foi possível carregar as ações. Tente novamente mais tarde.";
         }
+    }
 
-        if (
-            acao.documento &&
-            acao.documento.conteudo &&
-            acao.documento.conteudo.startsWith(
-                "data:application/pdf"
-            )
-        ) {
-            const link = document.createElement("a");
-            link.href = acao.documento.conteudo;
-            link.download = acao.documento.nome || "documento.pdf";
-            link.textContent = "📄 Abrir ou baixar PDF";
-            link.className = "link-arquivo";
-            cartao.appendChild(link);
-        }
-
-        lista.appendChild(cartao);
-    });
-
-} catch (erro) {
-    estadoVazio.hidden = false;
-    estadoVazio.textContent =
-        "Não foi possível ler os cadastros salvos neste navegador.";
-}
-</script>
+    carregarAcoes();
+    </script>
 
 </body>
 </html>
