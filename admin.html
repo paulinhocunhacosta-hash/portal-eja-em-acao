@@ -114,6 +114,13 @@
       color: #0e7490;
     }
 
+    .link-pdf {
+      display: inline-block;
+      color: #0e7490;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+
     [hidden] {
       display: none !important;
     }
@@ -125,7 +132,7 @@
 <header class="cabecalho">
   <div class="logo">
     <h1>PORTAL EJA EM AÇÃO</h1>
-    <p>Administração de ações e projetos</p>
+    <p>Administração de ações, projetos e materiais</p>
   </div>
 </header>
 
@@ -133,7 +140,6 @@
 
   <section id="areaLogin" class="caixa">
     <h2>Acesso administrativo</h2>
-
     <p>Entre com seu e-mail e sua senha de administrador.</p>
 
     <form id="formLogin">
@@ -162,19 +168,31 @@
     </div>
 
     <div class="aviso">
-      Os cadastros aprovados serão disponibilizados na área pública.
-      Analise as informações antes de aprovar.
+      Analise os cadastros recebidos antes de aprovar.
+      Somente os conteúdos aprovados serão disponibilizados na área pública do portal.
     </div>
 
-    <div class="caixa">
-      <h3>Cadastros recebidos</h3>
-      <p id="resumo">Carregando cadastros...</p>
-      <button type="button" class="principal" id="botaoAtualizar">
-        Atualizar lista
+    <section class="caixa">
+      <h2>Ações e Projetos</h2>
+      <p id="resumoAcoes">Carregando cadastros...</p>
+
+      <button type="button" class="principal" id="botaoAtualizarAcoes">
+        Atualizar ações
       </button>
-    </div>
 
-    <div id="listaPendentes"></div>
+      <div id="listaPendentes"></div>
+    </section>
+
+    <section class="caixa">
+      <h2>Materiais Pedagógicos</h2>
+      <p id="resumoMateriais">Carregando materiais...</p>
+
+      <button type="button" class="principal" id="botaoAtualizarMateriais">
+        Atualizar materiais
+      </button>
+
+      <div id="listaMateriais"></div>
+    </section>
 
   </section>
 
@@ -194,8 +212,12 @@
   const areaAdministrativa = document.getElementById("areaAdministrativa");
   const formLogin = document.getElementById("formLogin");
   const mensagemLogin = document.getElementById("mensagemLogin");
-  const resumo = document.getElementById("resumo");
-  const lista = document.getElementById("listaPendentes");
+
+  const resumoAcoes = document.getElementById("resumoAcoes");
+  const resumoMateriais = document.getElementById("resumoMateriais");
+
+  const listaAcoes = document.getElementById("listaPendentes");
+  const listaMateriais = document.getElementById("listaMateriais");
 
   let usuarioAtual = null;
 
@@ -228,6 +250,7 @@
         mensagemLogin,
         "Esta conta não possui autorização para acessar o painel."
       );
+
       return false;
     }
 
@@ -238,7 +261,11 @@
     document.getElementById("identificacao").textContent =
       "Administrador conectado: " + usuario.email;
 
-    await carregarAcoes();
+    await Promise.all([
+      carregarAcoes(),
+      carregarMateriais()
+    ]);
+
     return true;
   }
 
@@ -254,7 +281,7 @@
 
     try {
       const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: email,
+        email,
         password: senha
       });
 
@@ -273,9 +300,11 @@
     }
   });
 
+  // GERENCIAMENTO DE AÇÕES E PROJETOS
+
   async function carregarAcoes() {
-    lista.replaceChildren();
-    resumo.textContent = "Carregando cadastros...";
+    listaAcoes.replaceChildren();
+    resumoAcoes.textContent = "Carregando ações...";
 
     const { data, error } = await supabaseClient
       .from("acoes")
@@ -283,19 +312,21 @@
       .order("criado_em", { ascending: false });
 
     if (error) {
-      resumo.textContent = "Não foi possível carregar os cadastros.";
+      resumoAcoes.textContent = "Não foi possível carregar as ações.";
       return;
     }
 
-    const pendentes = data.filter(acao => acao.status === "pendente");
+    const pendentes = data.filter(
+      acao => acao.status === "pendente"
+    );
 
-    resumo.textContent =
+    resumoAcoes.textContent =
       "Total de cadastros: " + data.length +
       " | Aguardando aprovação: " + pendentes.length;
 
     if (data.length === 0) {
-      lista.appendChild(
-        criarTexto("p", "Nenhum cadastro foi recebido até o momento.")
+      listaAcoes.appendChild(
+        criarTexto("p", "Nenhuma ação foi recebida até o momento.")
       );
       return;
     }
@@ -326,27 +357,21 @@
       );
 
       if (acao.status === "pendente") {
-        const botaoAprovar = criarTexto(
-          "button",
-          "Aprovar publicação"
-        );
+        const botaoAprovar = criarTexto("button", "Aprovar publicação");
         botaoAprovar.type = "button";
         botaoAprovar.className = "aprovar";
 
         botaoAprovar.addEventListener("click", function() {
-          alterarStatus(acao.id, "aprovada");
+          alterarStatusAcao(acao.id, "aprovada");
         });
 
-        const botaoRejeitar = criarTexto(
-          "button",
-          "Rejeitar cadastro"
-        );
+        const botaoRejeitar = criarTexto("button", "Rejeitar cadastro");
         botaoRejeitar.type = "button";
         botaoRejeitar.className = "rejeitar";
 
         botaoRejeitar.addEventListener("click", function() {
-          if (confirm("Deseja realmente rejeitar este cadastro?")) {
-            alterarStatus(acao.id, "rejeitada");
+          if (confirm("Deseja realmente rejeitar esta ação?")) {
+            alterarStatusAcao(acao.id, "rejeitada");
           }
         });
 
@@ -354,11 +379,11 @@
         cartao.appendChild(botaoRejeitar);
       }
 
-      lista.appendChild(cartao);
+      listaAcoes.appendChild(cartao);
     });
   }
 
-  async function alterarStatus(id, novoStatus) {
+  async function alterarStatusAcao(id, novoStatus) {
     if (!usuarioAtual) return;
 
     const confirmou = novoStatus === "aprovada"
@@ -373,7 +398,7 @@
       .eq("id", id);
 
     if (error) {
-      alert("Não foi possível atualizar. Verifique sua conexão e suas permissões.");
+      alert("Não foi possível atualizar a ação. Verifique as permissões.");
       return;
     }
 
@@ -386,23 +411,183 @@
     await carregarAcoes();
   }
 
-  document.getElementById("botaoAtualizar").addEventListener(
+  // GERENCIAMENTO DE MATERIAIS PEDAGÓGICOS
+
+  async function carregarMateriais() {
+    listaMateriais.replaceChildren();
+    resumoMateriais.textContent = "Carregando materiais...";
+
+    const { data, error } = await supabaseClient
+      .from("materiais")
+      .select("*")
+      .order("criado_em", { ascending: false });
+
+    if (error) {
+      resumoMateriais.textContent =
+        "Não foi possível carregar os materiais. Verifique as permissões da tabela.";
+      return;
+    }
+
+    const pendentes = data.filter(
+      material => material.status === "pendente"
+    );
+
+    resumoMateriais.textContent =
+      "Total de materiais: " + data.length +
+      " | Aguardando aprovação: " + pendentes.length;
+
+    if (data.length === 0) {
+      listaMateriais.appendChild(
+        criarTexto("p", "Nenhum material foi recebido até o momento.")
+      );
+      return;
+    }
+
+    for (const material of data) {
+      const cartao = document.createElement("article");
+      cartao.className = "cartao";
+
+      cartao.appendChild(
+        criarTexto("h3", material.titulo || "Material sem título")
+      );
+
+      cartao.appendChild(
+        criarTexto("p", "Categoria: " + (material.categoria || "Não informada"))
+      );
+
+      cartao.appendChild(
+        criarTexto("p", "Descrição: " + (material.descricao || ""))
+      );
+
+      cartao.appendChild(
+        criarTexto("p", "Situação: " + material.status)
+      );
+
+      if (material.criado_em) {
+        const dataFormatada = new Date(
+          material.criado_em
+        ).toLocaleString("pt-BR");
+
+        cartao.appendChild(
+          criarTexto("p", "Recebido em: " + dataFormatada)
+        );
+      }
+
+      if (material.arquivo_url) {
+        const { data: arquivo, error: erroArquivo } =
+          await supabaseClient.storage
+            .from("arquivos")
+            .createSignedUrl(material.arquivo_url, 3600);
+
+        if (!erroArquivo && arquivo) {
+          const link = document.createElement("a");
+          link.className = "link-pdf";
+          link.href = arquivo.signedUrl;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = "📄 Visualizar PDF";
+
+          cartao.appendChild(link);
+        } else {
+          cartao.appendChild(
+            criarTexto("p", "Não foi possível gerar o acesso ao PDF.")
+          );
+        }
+      }
+
+      if (material.status === "pendente") {
+        const botaoAprovar = criarTexto("button", "Aprovar material");
+        botaoAprovar.type = "button";
+        botaoAprovar.className = "aprovar";
+
+        botaoAprovar.addEventListener("click", function() {
+          alterarStatusMaterial(material.id, "aprovado");
+        });
+
+        const botaoRejeitar = criarTexto("button", "Rejeitar material");
+        botaoRejeitar.type = "button";
+        botaoRejeitar.className = "rejeitar";
+
+        botaoRejeitar.addEventListener("click", function() {
+          if (confirm("Deseja realmente rejeitar este material?")) {
+            alterarStatusMaterial(material.id, "rejeitado");
+          }
+        });
+
+        cartao.appendChild(botaoAprovar);
+        cartao.appendChild(botaoRejeitar);
+      }
+
+      listaMateriais.appendChild(cartao);
+    }
+  }
+
+  async function alterarStatusMaterial(id, novoStatus) {
+    if (!usuarioAtual) return;
+
+    if (novoStatus === "aprovado") {
+      const confirmou = confirm(
+        "Deseja aprovar este material para publicação na área pública?"
+      );
+
+      if (!confirmou) return;
+    }
+
+    const { error } = await supabaseClient
+      .from("materiais")
+      .update({ status: novoStatus })
+      .eq("id", id);
+
+    if (error) {
+      alert(
+        "Não foi possível atualizar o material. Verifique as permissões da tabela."
+      );
+      return;
+    }
+
+    alert(
+      novoStatus === "aprovado"
+        ? "Material aprovado! Ele poderá aparecer na página pública."
+        : "Material rejeitado."
+    );
+
+    await carregarMateriais();
+  }
+
+  // ATUALIZAÇÃO DAS LISTAS
+
+  document.getElementById("botaoAtualizarAcoes").addEventListener(
     "click",
     carregarAcoes
   );
+
+  document.getElementById("botaoAtualizarMateriais").addEventListener(
+    "click",
+    carregarMateriais
+  );
+
+  // SAIR DO PAINEL
 
   document.getElementById("botaoSair").addEventListener(
     "click",
     async function() {
       await supabaseClient.auth.signOut();
+
       usuarioAtual = null;
       areaAdministrativa.hidden = true;
       areaLogin.hidden = false;
+
       formLogin.reset();
-      lista.replaceChildren();
-      resumo.textContent = "";
+      listaAcoes.replaceChildren();
+      listaMateriais.replaceChildren();
+
+      resumoAcoes.textContent = "";
+      resumoMateriais.textContent = "";
+      mensagemLogin.textContent = "";
     }
   );
+
+  // VERIFICAR SESSÃO EXISTENTE
 
   async function iniciarPainel() {
     const { data, error } = await supabaseClient.auth.getSession();
