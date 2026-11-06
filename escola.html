@@ -4,39 +4,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Escolas | Portal EJA em Ação</title>
+<title>Ações da Escola | Portal EJA em Ação</title>
 <link rel="stylesheet" href="style.css">
 
 <style>
-.pagina-escolas {
+.pagina-escola {
     max-width: 1100px;
     margin: 40px auto;
     padding: 20px;
 }
 
-.grade-escolas {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 22px;
-    margin-top: 25px;
-}
-
-.cartao-escola {
+.cartao-acao {
     background: white;
-    padding: 22px;
+    padding: 24px;
+    margin: 22px 0;
     border-radius: 12px;
     box-shadow: 0 4px 14px rgba(0,0,0,.08);
-    cursor: pointer;
-    transition: .3s;
 }
 
-.cartao-escola:hover {
-    transform: translateY(-4px);
-}
-
-.cartao-escola h3 {
+.cartao-acao h3 {
     color: #155e75;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.galeria-fotos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.galeria-fotos img {
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.link-arquivo {
+    display: inline-block;
+    margin-top: 15px;
+    color: #155e75;
+    font-weight: bold;
+}
+
+.voltar {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #155e75;
+    font-weight: bold;
 }
 </style>
 </head>
@@ -53,16 +69,20 @@
         <a href="index.html">Início</a>
         <a href="acoes.html">Ações</a>
         <a href="materiais.html">Materiais</a>
+        <a href="escolas.html">Escolas da Rede</a>
     </nav>
 </header>
 
-<main class="pagina-escolas">
-    <h2>Escolas da Rede Municipal</h2>
-    <p>Selecione uma escola para visualizar todas as ações aprovadas.</p>
+<main class="pagina-escola">
 
-    <div id="listaEscolas" class="grade-escolas">
-        <p>Carregando escolas...</p>
+    <a class="voltar" href="escolas.html">← Voltar para Escolas da Rede</a>
+
+    <h2 id="nomeEscola">Ações da Escola</h2>
+
+    <div id="listaAcoes">
+        <p>Carregando ações...</p>
     </div>
+
 </main>
 
 <footer>
@@ -73,59 +93,121 @@
 <script src="supabase.js"></script>
 
 <script>
-async function carregarEscolas() {
-    const lista = document.getElementById("listaEscolas");
+function normalizarNome(nome) {
+    return (nome || "")
+        .trim()
+        .replace(/\.+$/, "")
+        .toLocaleLowerCase("pt-BR");
+}
+
+async function carregarAcoesDaEscola() {
+    const lista = document.getElementById("listaAcoes");
+    const nomeOriginal = new URLSearchParams(window.location.search)
+        .get("nome");
+
+    if (!nomeOriginal) {
+        lista.textContent = "Nenhuma escola foi selecionada.";
+        return;
+    }
+
+    document.getElementById("nomeEscola").textContent =
+        "Ações de " + nomeOriginal;
 
     const { data, error } = await supabaseClient
         .from("acoes")
-        .select("escola")
-        .eq("status", "aprovada");
+        .select("*")
+        .eq("status", "aprovada")
+        .order("criado_em", { ascending: false });
 
     if (error) {
-        lista.textContent = "Não foi possível carregar as escolas. Tente novamente.";
         console.error(error);
+        lista.textContent = "Não foi possível carregar as ações: " + error.message;
         return;
     }
 
-    const escolas = [...new Set(
-        (data || [])
-            .map(item => (item.escola || "").trim())
-            .filter(nome => nome !== "")
-    )].sort((a, b) => a.localeCompare(b, "pt-BR"));
+    const acoes = (data || []).filter(
+        acao => normalizarNome(acao.escola) === normalizarNome(nomeOriginal)
+    );
 
     lista.innerHTML = "";
 
-    if (escolas.length === 0) {
-        lista.textContent = "Ainda não há escolas com ações publicadas.";
+    if (acoes.length === 0) {
+        lista.textContent = "Ainda não há ações publicadas para esta escola.";
         return;
     }
 
-    escolas.forEach(nome => {
-        const cartao = document.createElement("div");
-        cartao.className = "cartao-escola";
+    for (const acao of acoes) {
+        const cartao = document.createElement("article");
+        cartao.className = "cartao-acao";
 
         const titulo = document.createElement("h3");
-        titulo.textContent = nome;
+        titulo.textContent = acao.titulo || "Ação pedagógica";
+        cartao.appendChild(titulo);
 
-        const quantidade = data.filter(
-            item => (item.escola || "").trim() === nome
-        ).length;
+        const professor = document.createElement("p");
+        professor.textContent = "Professor(a): " + (acao.professor || "Não informado");
+        cartao.appendChild(professor);
+
+        const turma = document.createElement("p");
+        turma.textContent = "Turma: " + (acao.turma || "Não informada");
+        cartao.appendChild(turma);
+
+        const data = document.createElement("p");
+        data.textContent = "Data: " + (acao.data_acao || "Não informada");
+        cartao.appendChild(data);
 
         const descricao = document.createElement("p");
-        descricao.textContent = quantidade + " ação(ões) publicada(s).";
-
-        cartao.appendChild(titulo);
+        descricao.textContent = acao.descricao || "";
         cartao.appendChild(descricao);
 
-        cartao.addEventListener("click", () => {
-            window.location.href = "escola.html?nome=" + encodeURIComponent(nome);
-        });
+        if (Array.isArray(acao.fotos) && acao.fotos.length > 0) {
+            const galeria = document.createElement("div");
+            galeria.className = "galeria-fotos";
+
+            for (const caminho of acao.fotos) {
+                const { data: arquivo, error: erroFoto } =
+                    await supabaseClient.storage
+                        .from("arquivos")
+                        .createSignedUrl(caminho, 3600);
+
+                if (erroFoto) {
+                    console.error("Erro ao abrir foto:", erroFoto);
+                    continue;
+                }
+
+                const imagem = document.createElement("img");
+                imagem.src = arquivo.signedUrl;
+                imagem.alt = "Foto da ação pedagógica";
+                galeria.appendChild(imagem);
+            }
+
+            cartao.appendChild(galeria);
+        }
+
+        if (acao.documento_url) {
+            const { data: arquivo, error: erroPDF } =
+                await supabaseClient.storage
+                    .from("arquivos")
+                    .createSignedUrl(acao.documento_url, 3600);
+
+            if (erroPDF) {
+                console.error("Erro ao abrir PDF:", erroPDF);
+            } else {
+                const link = document.createElement("a");
+                link.href = arquivo.signedUrl;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.className = "link-arquivo";
+                link.textContent = "📄 Abrir ou baixar PDF";
+                cartao.appendChild(link);
+            }
+        }
 
         lista.appendChild(cartao);
-    });
+    }
 }
 
-carregarEscolas();
+carregarAcoesDaEscola();
 </script>
 
 </body>
