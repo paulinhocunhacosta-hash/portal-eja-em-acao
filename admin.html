@@ -304,12 +304,13 @@ const mensagemEscola = document.getElementById("mensagemEscola");
     document.getElementById("identificacao").textContent =
       "Administrador conectado: " + usuario.email;
 
-    await Promise.all([
+    
+await Promise.all([
   carregarAcoes(),
   carregarMateriais(),
   carregarEscolas()
 ]);
-    ]);
+
 
     return true;
   }
