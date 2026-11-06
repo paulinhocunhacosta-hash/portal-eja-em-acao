@@ -194,6 +194,43 @@
       <div id="listaMateriais"></div>
     </section>
 
+<section class="caixa">
+  <h2>Gerenciamento de Escolas</h2>
+
+  <p>Cadastre e gerencie as escolas da rede municipal.</p>
+
+  <form id="formEscola">
+    <label for="nomeEscola">Nome da escola</label>
+
+    <input
+      type="text"
+      id="nomeEscola"
+      placeholder="Digite o nome da escola"
+      maxlength="150"
+      required
+    >
+
+    <button type="submit" class="principal" id="botaoCadastrarEscola">
+      Cadastrar escola
+    </button>
+  </form>
+
+  <div id="mensagemEscola" class="mensagem"
+       role="status" aria-live="polite"></div>
+
+  <hr>
+
+  <h3>Escolas cadastradas</h3>
+
+  <p id="resumoEscolas">Carregando escolas...</p>
+
+  <button type="button" class="principal" id="botaoAtualizarEscolas">
+    Atualizar escolas
+  </button>
+
+  <div id="listaEscolas"></div>
+</section>
+
   </section>
 
   <a class="voltar" href="index.html">← Voltar à página inicial</a>
@@ -218,6 +255,12 @@
 
   const listaAcoes = document.getElementById("listaPendentes");
   const listaMateriais = document.getElementById("listaMateriais");
+
+const formEscola = document.getElementById("formEscola");
+const nomeEscola = document.getElementById("nomeEscola");
+const listaEscolas = document.getElementById("listaEscolas");
+const resumoEscolas = document.getElementById("resumoEscolas");
+const mensagemEscola = document.getElementById("mensagemEscola");
 
   let usuarioAtual = null;
 
@@ -262,8 +305,10 @@
       "Administrador conectado: " + usuario.email;
 
     await Promise.all([
-      carregarAcoes(),
-      carregarMateriais()
+  carregarAcoes(),
+  carregarMateriais(),
+  carregarEscolas()
+]);
     ]);
 
     return true;
@@ -554,13 +599,178 @@
     await carregarMateriais();
   }
 
+// GERENCIAMENTO DE ESCOLAS
+
+async function carregarEscolas() {
+  listaEscolas.replaceChildren();
+  resumoEscolas.textContent = "Carregando escolas...";
+
+  const { data, error } = await supabaseClient
+    .from("escolas")
+    .select("*")
+    .order("nome", { ascending: true });
+
+  if (error) {
+    resumoEscolas.textContent = "Erro ao carregar escolas.";
+    return;
+  }
+
+  resumoEscolas.textContent =
+    "Total de escolas cadastradas: " + data.length;
+
+  if (data.length === 0) {
+    listaEscolas.appendChild(
+      criarTexto("p", "Nenhuma escola cadastrada.")
+    );
+    return;
+  }
+
+  data.forEach(escola => {
+    const cartao = document.createElement("article");
+    cartao.className = "cartao";
+
+    cartao.appendChild(
+      criarTexto("h3", escola.nome)
+    );
+
+    const botaoEditar = criarTexto("button", "Editar");
+    botaoEditar.type = "button";
+    botaoEditar.className = "principal";
+
+    botaoEditar.addEventListener("click", async function() {
+      const novoNome = prompt(
+        "Digite o novo nome da escola:",
+        escola.nome
+      );
+
+      if (novoNome === null) return;
+
+      const nome = novoNome.trim();
+
+      if (!nome) {
+        alert("O nome da escola não pode ficar vazio.");
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("escolas")
+        .update({ nome: nome })
+        .eq("id", escola.id);
+
+      if (error) {
+        alert(
+          error.code === "23505"
+            ? "Já existe uma escola com esse nome."
+            : "Não foi possível editar a escola."
+        );
+        return;
+      }
+
+      alert("Escola atualizada com sucesso!");
+      await carregarEscolas();
+    });
+
+    const botaoExcluir = criarTexto("button", "Excluir");
+    botaoExcluir.type = "button";
+    botaoExcluir.className = "rejeitar";
+
+    botaoExcluir.addEventListener("click", async function() {
+      const confirmou = confirm(
+        "Deseja realmente excluir a escola " + escola.nome + "?"
+      );
+
+      if (!confirmou) return;
+
+      const { error } = await supabaseClient
+        .from("escolas")
+        .delete()
+        .eq("id", escola.id);
+
+      if (error) {
+        alert("Não foi possível excluir a escola.");
+        return;
+      }
+
+      alert("Escola excluída com sucesso!");
+      await carregarEscolas();
+    });
+
+    cartao.appendChild(botaoEditar);
+    cartao.appendChild(botaoExcluir);
+
+    listaEscolas.appendChild(cartao);
+  });
+}
+
+// CADASTRAR ESCOLA
+
+formEscola.addEventListener("submit", async function(evento) {
+  evento.preventDefault();
+
+  if (!usuarioAtual) return;
+
+  const nome = nomeEscola.value.trim();
+
+  if (!nome) {
+    mensagem(mensagemEscola, "Digite o nome da escola.");
+    return;
+  }
+
+  const botao = document.getElementById("botaoCadastrarEscola");
+
+  botao.disabled = true;
+  botao.textContent = "Cadastrando...";
+
+  try {
+    const { error } = await supabaseClient
+      .from("escolas")
+      .insert([{ nome: nome }]);
+
+    if (error) {
+      if (error.code === "23505") {
+        mensagem(
+          mensagemEscola,
+          "Essa escola já está cadastrada."
+        );
+        return;
+      }
+
+      throw error;
+    }
+
+    mensagem(
+      mensagemEscola,
+      "Escola cadastrada com sucesso!",
+      true
+    );
+
+    formEscola.reset();
+
+    await carregarEscolas();
+
+  } catch (erro) {
+    console.error("Erro ao cadastrar escola:", erro);
+
+    mensagem(
+      mensagemEscola,
+      "Não foi possível cadastrar a escola. Verifique as permissões."
+    );
+  } finally {
+    botao.disabled = false;
+    botao.textContent = "Cadastrar escola";
+  }
+});
+
   // ATUALIZAÇÃO DAS LISTAS
 
   document.getElementById("botaoAtualizarAcoes").addEventListener(
     "click",
     carregarAcoes
   );
-
+document.getElementById("botaoAtualizarEscolas").addEventListener(
+  "click",
+  carregarEscolas
+);
   document.getElementById("botaoAtualizarMateriais").addEventListener(
     "click",
     carregarMateriais
@@ -580,7 +790,7 @@
       formLogin.reset();
       listaAcoes.replaceChildren();
       listaMateriais.replaceChildren();
-
+listaEscolas.replaceChildren();
       resumoAcoes.textContent = "";
       resumoMateriais.textContent = "";
       mensagemLogin.textContent = "";
