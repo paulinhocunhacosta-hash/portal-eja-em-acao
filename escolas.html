@@ -73,38 +73,62 @@ line-height:1.6;
 <p>© 2026 Portal EJA em Ação</p>
 </footer>
 
+
 <script>
-const lista=document.getElementById("listaEscolas");
+async function carregarEscolas() {
+    const lista = document.getElementById("listaEscolas");
 
-const registros=JSON.parse(localStorage.getItem("eja_acoes")||"[]");
+    lista.textContent = "Carregando escolas...";
 
-const aprovadas=registros.filter(a=>a.status==="aprovada");
+    const { data, error } = await supabaseClient
+        .from("acoes")
+        .select("*")
+        .eq("status", "aprovada");
 
-const escolas=[...new Set(aprovadas.map(a=>a.escola))].sort();
+    if (error) {
+        console.error("Erro ao buscar ações:", error);
+        lista.textContent = "Erro ao carregar escolas: " + error.message;
+        return;
+    }
 
-if(escolas.length===0){
-lista.innerHTML="<p>Ainda não há escolas com ações publicadas.</p>";
+    console.log("Ações aprovadas encontradas:", data);
+
+    const escolas = [...new Set(
+        (data || [])
+            .map(item => (item.escola || "").trim().replace(/\.$/, ""))
+            .filter(nome => nome !== "")
+    )].sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+    lista.innerHTML = "";
+
+    if (escolas.length === 0) {
+        lista.textContent = "Ainda não há escolas com ações publicadas.";
+        return;
+    }
+
+    escolas.forEach(nome => {
+        const cartao = document.createElement("div");
+        cartao.className = "cartao-escola";
+
+        const titulo = document.createElement("h3");
+        titulo.textContent = nome;
+
+        const descricao = document.createElement("p");
+        descricao.textContent = "Clique para visualizar as ações desta escola.";
+
+        cartao.appendChild(titulo);
+        cartao.appendChild(descricao);
+
+        cartao.addEventListener("click", () => {
+            window.location.href =
+                "escola.html?nome=" + encodeURIComponent(nome);
+        });
+
+        lista.appendChild(cartao);
+    });
 }
 
-escolas.forEach(nome=>{
-
-const quantidade=aprovadas.filter(a=>a.escola===nome).length;
-
-const cartao=document.createElement("div");
-cartao.className="cartao-escola";
-
-cartao.innerHTML=`
-<h3>${nome}</h3>
-<p>${quantidade} ação(ões) publicada(s).</p>
-`;
-
-cartao.onclick=function(){
-window.location.href="escola.html?nome="+encodeURIComponent(nome);
-};
-
-lista.appendChild(cartao);
-
-});
+carregarEscolas();
 </script>
 
 </body>
