@@ -315,3 +315,28 @@ footer {
     background: #155e75;
     transform: translateY(-2px);
 }
+/* Indicadores das escolas */
+
+.indicador-escola {
+    display: inline-block;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 14px;
+}
+
+.indicador-com-acoes {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.indicador-sem-acoes {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.indicador-indisponivel {
+    background: #fef3c7;
+    color: #92400e;
+}
