@@ -77,58 +77,54 @@ line-height:1.6;
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
   <script>  
+
 async function carregarEscolas() {
     const lista = document.getElementById("listaEscolas");
 
     lista.textContent = "Carregando escolas...";
 
     const { data, error } = await supabaseClient
-        .from("acoes")
-        .select("*")
-        .eq("status", "aprovada");
+        .from("escolas")
+        .select("id, nome")
+        .order("nome", { ascending: true });
 
     if (error) {
-        console.error("Erro ao buscar ações:", error);
+        console.error("Erro ao buscar escolas:", error);
         lista.textContent = "Erro ao carregar escolas: " + error.message;
         return;
     }
 
-    console.log("Ações aprovadas encontradas:", data);
-
-    const escolas = [...new Set(
-        (data || [])
-            .map(item => (item.escola || "").trim().replace(/\.$/, ""))
-            .filter(nome => nome !== "")
-    )].sort((a, b) => a.localeCompare(b, "pt-BR"));
-
     lista.innerHTML = "";
 
-    if (escolas.length === 0) {
-        lista.textContent = "Ainda não há escolas com ações publicadas.";
+    if (!data || data.length === 0) {
+        lista.textContent = "Ainda não há escolas cadastradas.";
         return;
     }
 
-    escolas.forEach(nome => {
+    data.forEach(escola => {
         const cartao = document.createElement("div");
         cartao.className = "cartao-escola";
 
         const titulo = document.createElement("h3");
-        titulo.textContent = nome;
+        titulo.textContent = escola.nome;
 
         const descricao = document.createElement("p");
-        descricao.textContent = "Clique para visualizar as ações desta escola.";
+        descricao.textContent =
+            "Clique para visualizar as ações desta escola.";
 
         cartao.appendChild(titulo);
         cartao.appendChild(descricao);
 
         cartao.addEventListener("click", () => {
             window.location.href =
-                "escola.html?nome=" + encodeURIComponent(nome);
+                "escola.html?nome=" + encodeURIComponent(escola.nome);
         });
 
         lista.appendChild(cartao);
     });
 }
+
+carregarEscolas();
 
 carregarEscolas();
 </script>
