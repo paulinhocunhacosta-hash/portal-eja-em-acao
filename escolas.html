@@ -78,15 +78,17 @@ line-height:1.6;
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
-  <script>  
-
+ <script>
 
 async function carregarEscolas() {
+
     const lista = document.getElementById("listaEscolas");
+    const painel = document.getElementById("estatisticasRede");
 
     lista.textContent = "Carregando escolas...";
 
     const [resultadoEscolas, resultadoAcoes] = await Promise.all([
+
         supabaseClient
             .from("escolas")
             .select("id, nome")
@@ -96,6 +98,7 @@ async function carregarEscolas() {
             .from("acoes")
             .select("escola")
             .eq("status", "aprovada")
+
     ]);
 
     if (resultadoEscolas.error) {
@@ -109,41 +112,40 @@ async function carregarEscolas() {
     }
 
     const escolas = resultadoEscolas.data || [];
-const acoes = resultadoAcoes.data || [];
+    const acoes = resultadoAcoes.data || [];
 
-lista.innerHTML = "";
+    lista.innerHTML = "";
 
-function normalizarNome(nome) {
-    return (nome || "")
-        .trim()
-        .replace(/\.$/, "")
-        .toLocaleLowerCase("pt-BR");
-}
+    function normalizarNome(nome) {
+        return (nome || "")
+            .trim()
+            .replace(/\.$/, "")
+            .toLocaleLowerCase("pt-BR");
+    }
 
-// Calcula as estatísticas da rede
-const totalEscolas = escolas.length;
+    // ESTATÍSTICAS DA REDE
 
-const totalAcoes = resultadoAcoes.error
-    ? null
-    : acoes.length;
+    const totalEscolas = escolas.length;
 
-const escolasComAcoes = resultadoAcoes.error
-    ? null
-    : escolas.filter(escola =>
-        acoes.some(acao =>
-            normalizarNome(acao.escola) ===
-            normalizarNome(escola.nome)
-        )
-    ).length;
+    const totalAcoes = resultadoAcoes.error
+        ? null
+        : acoes.length;
 
-const escolasSemAcoes = escolasComAcoes === null
-    ? null
-    : totalEscolas - escolasComAcoes;
+    const escolasComAcoes = resultadoAcoes.error
+        ? null
+        : escolas.filter(escola =>
+            acoes.some(acao =>
+                normalizarNome(acao.escola) ===
+                normalizarNome(escola.nome)
+            )
+        ).length;
 
-// Exibe as estatísticas
-const painel = document.getElementById("estatisticasRede");
+    const escolasSemAcoes = escolasComAcoes === null
+        ? null
+        : totalEscolas - escolasComAcoes;
 
-if (painel) {
+    // EXIBIÇÃO DAS ESTATÍSTICAS
+
     painel.innerHTML = `
         <div class="cartao-estatistica">
             <span>🏫</span>
@@ -169,13 +171,18 @@ if (painel) {
             <p>Escolas sem ações</p>
         </div>
     `;
-}
 
-if (escolas.length === 0) {
-    lista.textContent = "Ainda não há escolas cadastradas.";
-    return;
-}
+    // VERIFICA SE EXISTEM ESCOLAS
+
+    if (escolas.length === 0) {
+        lista.textContent = "Ainda não há escolas cadastradas.";
+        return;
+    }
+
+    // CRIA CADA ESCOLA APENAS UMA VEZ
+
     escolas.forEach(escola => {
+
         const cartao = document.createElement("div");
         cartao.className = "cartao-escola";
 
@@ -188,95 +195,68 @@ if (escolas.length === 0) {
 
         const quantidade = document.createElement("p");
 
-        if (resultadoAcoes.error) {
-            quantidade.textContent =
-                "Não foi possível carregar a quantidade de ações.";
-        } else {
-            const total = acoes.filter(acao =>
+        const total = resultadoAcoes.error
+            ? null
+            : acoes.filter(acao =>
                 normalizarNome(acao.escola) ===
                 normalizarNome(escola.nome)
             ).length;
 
-            quantidade.textContent = total === 0
-                ? "Nenhuma ação publicada."
-                : total === 1
-                    ? "1 ação publicada."
-                    : total + " ações publicadas.";
+        // INDICADOR VISUAL
+
+        const indicador = document.createElement("span");
+        indicador.className = "indicador-escola";
+
+        if (total === null) {
+
+            quantidade.textContent =
+                "Não foi possível carregar a quantidade de ações.";
+
+            indicador.textContent = "Quantidade indisponível";
+            indicador.classList.add("indicador-indisponivel");
+
+        } else if (total === 0) {
+
+            quantidade.textContent = "Nenhuma ação publicada.";
+
+            indicador.textContent = "Aguardando ações";
+            indicador.classList.add("indicador-sem-acoes");
+
+        } else {
+
+            quantidade.textContent = total === 1
+                ? "1 ação publicada."
+                : total + " ações publicadas.";
+
+            indicador.textContent = "Com ações publicadas";
+            indicador.classList.add("indicador-com-acoes");
+
         }
 
+        cartao.appendChild(indicador);
         cartao.appendChild(titulo);
         cartao.appendChild(descricao);
         cartao.appendChild(quantidade);
 
+        // ABRIR PÁGINA INDIVIDUAL
+
         cartao.addEventListener("click", () => {
+
             window.location.href =
                 "escola.html?nome=" + encodeURIComponent(escola.nome);
+
         });
-escolas.forEach(escola => {
-    const cartao = document.createElement("div");
-    cartao.className = "cartao-escola";
 
-    const titulo = document.createElement("h3");
-    titulo.textContent = escola.nome;
-
-    const descricao = document.createElement("p");
-    descricao.textContent =
-        "Clique para visualizar as ações desta escola.";
-
-    const quantidade = document.createElement("p");
-
-    const total = resultadoAcoes.error
-        ? null
-        : acoes.filter(acao =>
-            normalizarNome(acao.escola) ===
-            normalizarNome(escola.nome)
-        ).length;
-
-    const indicador = document.createElement("span");
-    indicador.className = "indicador-escola";
-
-    if (total === null) {
-        quantidade.textContent =
-            "Não foi possível carregar a quantidade de ações.";
-        indicador.textContent = "Quantidade indisponível";
-        indicador.classList.add("indicador-indisponivel");
-
-    } else if (total === 0) {
-        quantidade.textContent = "Nenhuma ação publicada.";
-        indicador.textContent = "Aguardando ações";
-        indicador.classList.add("indicador-sem-acoes");
-
-    } else {
-        quantidade.textContent = total === 1
-            ? "1 ação publicada."
-            : total + " ações publicadas.";
-
-        indicador.textContent = "Com ações publicadas";
-        indicador.classList.add("indicador-com-acoes");
-    }
-
-    cartao.appendChild(indicador);
-    cartao.appendChild(titulo);
-    cartao.appendChild(descricao);
-    cartao.appendChild(quantidade);
-
-    cartao.addEventListener("click", () => {
-        window.location.href =
-            "escola.html?nome=" + encodeURIComponent(escola.nome);
-    });
-
-    lista.appendChild(cartao);
-});
         lista.appendChild(cartao);
+
     });
+
 }
 
-carregarEscolas();
-
-
-carregarEscolas();
+// CHAMA A FUNÇÃO APENAS UMA VEZ
 
 carregarEscolas();
+
 </script>
 
 </body>
