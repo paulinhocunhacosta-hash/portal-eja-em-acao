@@ -78,30 +78,52 @@ line-height:1.6;
 <script src="supabase.js"></script>
   <script>  
 
+
 async function carregarEscolas() {
     const lista = document.getElementById("listaEscolas");
 
     lista.textContent = "Carregando escolas...";
 
-    const { data, error } = await supabaseClient
-        .from("escolas")
-        .select("id, nome")
-        .order("nome", { ascending: true });
+    const [resultadoEscolas, resultadoAcoes] = await Promise.all([
+        supabaseClient
+            .from("escolas")
+            .select("id, nome")
+            .order("nome", { ascending: true }),
 
-    if (error) {
-        console.error("Erro ao buscar escolas:", error);
-        lista.textContent = "Erro ao carregar escolas: " + error.message;
+        supabaseClient
+            .from("acoes")
+            .select("escola")
+            .eq("status", "aprovada")
+    ]);
+
+    if (resultadoEscolas.error) {
+        console.error("Erro ao buscar escolas:", resultadoEscolas.error);
+        lista.textContent = "Erro ao carregar escolas.";
         return;
     }
 
+    if (resultadoAcoes.error) {
+        console.error("Erro ao buscar ações:", resultadoAcoes.error);
+    }
+
+    const escolas = resultadoEscolas.data || [];
+    const acoes = resultadoAcoes.data || [];
+
     lista.innerHTML = "";
 
-    if (!data || data.length === 0) {
+    if (escolas.length === 0) {
         lista.textContent = "Ainda não há escolas cadastradas.";
         return;
     }
 
-    data.forEach(escola => {
+    function normalizarNome(nome) {
+        return (nome || "")
+            .trim()
+            .replace(/\.$/, "")
+            .toLocaleLowerCase("pt-BR");
+    }
+
+    escolas.forEach(escola => {
         const cartao = document.createElement("div");
         cartao.className = "cartao-escola";
 
@@ -112,8 +134,27 @@ async function carregarEscolas() {
         descricao.textContent =
             "Clique para visualizar as ações desta escola.";
 
+        const quantidade = document.createElement("p");
+
+        if (resultadoAcoes.error) {
+            quantidade.textContent =
+                "Não foi possível carregar a quantidade de ações.";
+        } else {
+            const total = acoes.filter(acao =>
+                normalizarNome(acao.escola) ===
+                normalizarNome(escola.nome)
+            ).length;
+
+            quantidade.textContent = total === 0
+                ? "Nenhuma ação publicada."
+                : total === 1
+                    ? "1 ação publicada."
+                    : total + " ações publicadas.";
+        }
+
         cartao.appendChild(titulo);
         cartao.appendChild(descricao);
+        cartao.appendChild(quantidade);
 
         cartao.addEventListener("click", () => {
             window.location.href =
@@ -123,6 +164,9 @@ async function carregarEscolas() {
         lista.appendChild(cartao);
     });
 }
+
+carregarEscolas();
+
 
 carregarEscolas();
 
