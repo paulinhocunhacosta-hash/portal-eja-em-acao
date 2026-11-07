@@ -1,260 +1,202 @@
-
-<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Administrativo | Portal EJA em Ação</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Administrativo | Portal EJA em Ação</title>
+<link rel="stylesheet" href="style.css">  <style>
+body {
+font-family: Arial, sans-serif;
+background: #f1f5f9;
+color: #333;
+}
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f1f5f9;
-      color: #333;
-    }
+.painel {
+max-width: 1100px;
+margin: 35px auto;
+padding: 20px;
+}
 
-    .painel {
-      max-width: 1100px;
-      margin: 35px auto;
-      padding: 20px;
-    }
+h2, h3 {
+color: #155e75;
+}
 
-    h2, h3 {
-      color: #155e75;
-    }
+.caixa {
+background: white;
+padding: 24px;
+margin: 20px 0;
+border-radius: 12px;
+box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
 
-    .caixa {
-      background: white;
-      padding: 24px;
-      margin: 20px 0;
-      border-radius: 12px;
-      box-shadow: 0 4px 14px rgba(0,0,0,.08);
-    }
+label {
+display: block;
+margin: 14px 0 6px;
+font-weight: bold;
+}
 
-    label {
-      display: block;
-      margin: 14px 0 6px;
-      font-weight: bold;
-    }
+input {
+width: 100%;
+box-sizing: border-box;
+padding: 12px;
+border: 1px solid #cbd5e1;
+border-radius: 7px;
+}
 
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 7px;
-    }
+button {
+padding: 12px 18px;
+border: 0;
+border-radius: 7px;
+cursor: pointer;
+font-weight: bold;
+margin: 8px 8px 8px 0;
+}
 
-    button {
-      padding: 12px 18px;
-      border: 0;
-      border-radius: 7px;
-      cursor: pointer;
-      font-weight: bold;
-      margin: 8px 8px 8px 0;
-    }
+button:disabled {
+opacity: .6;
+cursor: not-allowed;
+}
 
-    button:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-    }
+.principal {
+background: #155e75;
+color: white;
+}
 
-    .principal {
-      background: #155e75;
-      color: white;
-    }
+.aprovar {
+background: #166534;
+color: white;
+}
 
-    .aprovar {
-      background: #166534;
-      color: white;
-    }
+.rejeitar {
+background: #b91c1c;
+color: white;
+}
 
-    .rejeitar {
-      background: #b91c1c;
-      color: white;
-    }
+.sair {
+background: #475569;
+color: white;
+}
 
-    .sair {
-      background: #475569;
-      color: white;
-    }
+.cartao {
+background: white;
+padding: 22px;
+margin: 20px 0;
+border-radius: 12px;
+box-shadow: 0 4px 14px rgba(0,0,0,.08);
+overflow-wrap: anywhere;
+}
 
-    .cartao {
-      background: white;
-      padding: 22px;
-      margin: 20px 0;
-      border-radius: 12px;
-      box-shadow: 0 4px 14px rgba(0,0,0,.08);
-      overflow-wrap: anywhere;
-    }
+.cartao p {
+line-height: 1.6;
+}
 
-    .cartao p {
-      line-height: 1.6;
-    }
+.mensagem {
+padding: 12px;
+margin-top: 15px;
+border-radius: 7px;
+line-height: 1.5;
+}
 
-    .mensagem {
-      padding: 12px;
-      margin-top: 15px;
-      border-radius: 7px;
-      line-height: 1.5;
-    }
+.aviso {
+background: #fef3c7;
+color: #92400e;
+padding: 14px;
+border-radius: 8px;
+line-height: 1.5;
+}
 
-    .aviso {
-      background: #fef3c7;
-      color: #92400e;
-      padding: 14px;
-      border-radius: 8px;
-      line-height: 1.5;
-    }
+.voltar {
+display: inline-block;
+margin: 25px 0;
+color: #0e7490;
+}
 
-    .voltar {
-      display: inline-block;
-      margin: 25px 0;
-      color: #0e7490;
-    }
+.link-pdf {
+display: inline-block;
+color: #0e7490;
+font-weight: bold;
+margin: 8px 0;
+}
 
-    .link-pdf {
-      display: inline-block;
-      color: #0e7490;
-      font-weight: bold;
-      margin: 8px 0;
-    }
-
-    [hidden] {
-      display: none !important;
-    }
-  </style>
-</head>
-
-<body>
-
-<header class="cabecalho">
-  <div class="logo">
-    <h1>PORTAL EJA EM AÇÃO</h1>
-    <p>Administração de ações, projetos e materiais</p>
-  </div>
-</header>
-
-<main class="painel">
-
-  <section id="areaLogin" class="caixa">
-    <h2>Acesso administrativo</h2>
-    <p>Entre com seu e-mail e sua senha de administrador.</p>
-
-    <form id="formLogin">
-      <label for="email">E-mail</label>
-      <input type="email" id="email" required autocomplete="username">
-
-      <label for="senha">Senha</label>
-      <input type="password" id="senha" required autocomplete="current-password">
+[hidden] {
+display: none !important;
+}
+</style></head><body><header class="cabecalho">
+<div class="logo">
+<h1>PORTAL EJA EM AÇÃO</h1>
+<p>Administração de ações, projetos e materiais</p>
+</div>
+</header><main class="painel">  <section id="areaLogin" class="caixa">
+<h2>Acesso administrativo</h2>
+<p>Entre com seu e-mail e sua senha de administrador.</p>    <form id="formLogin">
+<label for="email">E-mail</label>
+<input type="email" id="email" required autocomplete="username">
+<label for="senha">Senha</label>
 
       <button type="submit" class="principal" id="botaoLogin">
-        Entrar no painel
-      </button>
-    </form>
-
+Entrar no painel
+</button>
+</form>
     <div id="mensagemLogin" class="mensagem" role="status" aria-live="polite"></div>
-  </section>
-
+</section>
   <section id="areaAdministrativa" hidden>
-
-    <div class="caixa">
-      <h2>Painel Administrativo</h2>
-      <p id="identificacao"></p>
-      <button type="button" class="sair" id="botaoSair">
-        Sair da conta
-      </button>
-    </div>
-
+  <div class="caixa">
+<h2>Painel Administrativo</h2>
+<p id="identificacao"></p>
+<button type="button" class="sair" id="botaoSair">
+Sair da conta
+</button>
+</div>
     <div class="aviso">
-      Analise os cadastros recebidos antes de aprovar.
-      Somente os conteúdos aprovados serão disponibilizados na área pública do portal.
-    </div>
-
+Analise os cadastros recebidos antes de aprovar.
+Somente os conteúdos aprovados serão disponibilizados na área pública do portal.
+</div>
     <section class="caixa">
-      <h2>Ações e Projetos</h2>
-      <p id="resumoAcoes">Carregando cadastros...</p>
-
+<h2>Ações e Projetos</h2>
+<p id="resumoAcoes">Carregando cadastros...</p>
       <button type="button" class="principal" id="botaoAtualizarAcoes">
-        Atualizar ações
-      </button>
-
+Atualizar ações
+</button>
       <div id="listaPendentes"></div>
-    </section>
-
+</section>
     <section class="caixa">
-      <h2>Materiais Pedagógicos</h2>
-      <p id="resumoMateriais">Carregando materiais...</p>
-
+<h2>Materiais Pedagógicos</h2>
+<p id="resumoMateriais">Carregando materiais...</p>
       <button type="button" class="principal" id="botaoAtualizarMateriais">
-        Atualizar materiais
-      </button>
-
+Atualizar materiais
+</button>
       <div id="listaMateriais"></div>
-    </section>
+</section><section class="caixa">
+<h2>Gerenciamento de Escolas</h2>  <p>Cadastre e gerencie as escolas da rede municipal.</p>  <form id="formEscola">
+<label for="nomeEscola">Nome da escola</label><input
+type="text"
+id="nomeEscola"
+placeholder="Digite o nome da escola"
+maxlength="150"
+required
 
-<section class="caixa">
-  <h2>Gerenciamento de Escolas</h2>
-
-  <p>Cadastre e gerencie as escolas da rede municipal.</p>
-
-  <form id="formEscola">
-    <label for="nomeEscola">Nome da escola</label>
-
-    <input
-      type="text"
-      id="nomeEscola"
-      placeholder="Digite o nome da escola"
-      maxlength="150"
-      required
-    >
+> 
 
     <button type="submit" class="principal" id="botaoCadastrarEscola">
-      Cadastrar escola
-    </button>
-  </form>
+Cadastrar escola
+</button>  </form>  <div id="mensagemEscola" class="mensagem"
+role="status" aria-live="polite"></div>  <hr>  <h3>Escolas cadastradas</h3>  <p id="resumoEscolas">Carregando escolas...</p>  <button type="button" class="principal" id="botaoAtualizarEscolas">
+Atualizar escolas
+</button>  <div id="listaEscolas"></div>
+</section>  </section>[← Voltar à página inicial](index.html)
 
-  <div id="mensagemEscola" class="mensagem"
-       role="status" aria-live="polite"></div>
+</main><footer>
+<p>© 2026 Portal EJA em Ação</p>
+</footer><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase.js"></script><script>
+const areaLogin = document.getElementById("areaLogin");
+const areaAdministrativa = document.getElementById("areaAdministrativa");
+const formLogin = document.getElementById("formLogin");
+const mensagemLogin = document.getElementById("mensagemLogin");
 
-  <hr>
+const resumoAcoes = document.getElementById("resumoAcoes");
+const resumoMateriais = document.getElementById("resumoMateriais");
 
-  <h3>Escolas cadastradas</h3>
-
-  <p id="resumoEscolas">Carregando escolas...</p>
-
-  <button type="button" class="principal" id="botaoAtualizarEscolas">
-    Atualizar escolas
-  </button>
-
-  <div id="listaEscolas"></div>
-</section>
-
-  </section>
-
-  <a class="voltar" href="index.html">← Voltar à página inicial</a>
-
-</main>
-
-<footer>
-  <p>© 2026 Portal EJA em Ação</p>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase.js"></script>
-
-<script>
-  const areaLogin = document.getElementById("areaLogin");
-  const areaAdministrativa = document.getElementById("areaAdministrativa");
-  const formLogin = document.getElementById("formLogin");
-  const mensagemLogin = document.getElementById("mensagemLogin");
-
-  const resumoAcoes = document.getElementById("resumoAcoes");
-  const resumoMateriais = document.getElementById("resumoMateriais");
-
-  const listaAcoes = document.getElementById("listaPendentes");
-  const listaMateriais = document.getElementById("listaMateriais");
+const listaAcoes = document.getElementById("listaPendentes");
+const listaMateriais = document.getElementById("listaMateriais");
 
 const formEscola = document.getElementById("formEscola");
 const nomeEscola = document.getElementById("nomeEscola");
@@ -262,554 +204,550 @@ const listaEscolas = document.getElementById("listaEscolas");
 const resumoEscolas = document.getElementById("resumoEscolas");
 const mensagemEscola = document.getElementById("mensagemEscola");
 
-  let usuarioAtual = null;
+let usuarioAtual = null;
 
-  function mensagem(elemento, texto, sucesso = false) {
-    elemento.textContent = texto;
-    elemento.style.background = sucesso ? "#dcfce7" : "#fee2e2";
-    elemento.style.color = sucesso ? "#166534" : "#991b1b";
-  }
+function mensagem(elemento, texto, sucesso = false) {
+elemento.textContent = texto;
+elemento.style.background = sucesso ? "#dcfce7" : "#fee2e2";
+elemento.style.color = sucesso ? "#166534" : "#991b1b";
+}
 
-  function criarTexto(tag, texto) {
-    const elemento = document.createElement(tag);
-    elemento.textContent = texto;
-    return elemento;
-  }
+function criarTexto(tag, texto) {
+const elemento = document.createElement(tag);
+elemento.textContent = texto;
+return elemento;
+}
 
-  async function verificarAdministrador(usuario) {
-    const { data, error } = await supabaseClient
-      .from("administradores")
-      .select("user_id")
-      .eq("user_id", usuario.id)
-      .maybeSingle();
+async function verificarAdministrador(usuario) {
+const { data, error } = await supabaseClient
+.from("administradores")
+.select("user_id")
+.eq("user_id", usuario.id)
+.maybeSingle();
 
-    if (error || !data) {
-      await supabaseClient.auth.signOut();
-      usuarioAtual = null;
-      areaAdministrativa.hidden = true;
-      areaLogin.hidden = false;
+if (error || !data) {
+await supabaseClient.auth.signOut();
+usuarioAtual = null;
+areaAdministrativa.hidden = true;
+areaLogin.hidden = false;
 
-      mensagem(
-        mensagemLogin,
-        "Esta conta não possui autorização para acessar o painel."
-      );
+mensagem(
+mensagemLogin,
+"Esta conta não possui autorização para acessar o painel."
+);
 
-      return false;
-    }
+return false;
+}
 
-    usuarioAtual = usuario;
-    areaLogin.hidden = true;
-    areaAdministrativa.hidden = false;
+usuarioAtual = usuario;
+areaLogin.hidden = true;
+areaAdministrativa.hidden = false;
 
-    document.getElementById("identificacao").textContent =
-      "Administrador conectado: " + usuario.email;
+document.getElementById("identificacao").textContent =
+"Administrador conectado: " + usuario.email;
 
-    
 await Promise.all([
-  carregarAcoes(),
-  carregarMateriais(),
-  carregarEscolas()
+carregarAcoes(),
+carregarMateriais(),
+carregarEscolas()
 ]);
 
+return true;
+}
 
-    return true;
-  }
+formLogin.addEventListener("submit", async function(evento) {
+evento.preventDefault();
 
-  formLogin.addEventListener("submit", async function(evento) {
-    evento.preventDefault();
-console.log("CLIQUE NO BOTÃO DE LOGIN DETECTADO!");
-    const email = document.getElementById("email").value.trim();
-    const senha = document.getElementById("senha").value;
+const email = document.getElementById("email").value.trim();
+const senha = document.getElementById("senha").value;
 
-    const botao = document.getElementById("botaoLogin");
-    botao.disabled = true;
-    botao.textContent = "Verificando acesso...";
+const botao = document.getElementById("botaoLogin");
+botao.disabled = true;
+botao.textContent = "Verificando acesso...";
 
-    try {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password: senha
-      });
+try {
+const { data, error } = await supabaseClient.auth.signInWithPassword({
+email,
+password: senha
+});
 
-      if (error) throw error;
+if (error) throw error;
 
-      await verificarAdministrador(data.user);
+await verificarAdministrador(data.user);
 
-    } catch (erro) {
-      mensagem(
-        mensagemLogin,
-        "Não foi possível entrar. Confira seu e-mail e sua senha."
-      );
-    } finally {
-      botao.disabled = false;
-      botao.textContent = "Entrar no painel";
-    }
-  });
+} catch (erro) {
+mensagem(
+mensagemLogin,
+"Não foi possível entrar. Confira seu e-mail e sua senha."
+);
+} finally {
+botao.disabled = false;
+botao.textContent = "Entrar no painel";
+}
+});
 
-  // GERENCIAMENTO DE AÇÕES E PROJETOS
+// GERENCIAMENTO DE AÇÕES E PROJETOS
 
-  async function carregarAcoes() {
-    listaAcoes.replaceChildren();
-    resumoAcoes.textContent = "Carregando ações...";
+async function carregarAcoes() {
+listaAcoes.replaceChildren();
+resumoAcoes.textContent = "Carregando ações...";
 
-    const { data, error } = await supabaseClient
-      .from("acoes")
-      .select("*")
-      .order("criado_em", { ascending: false });
+const { data, error } = await supabaseClient
+.from("acoes")
+.select("*")
+.order("criado_em", { ascending: false });
 
-    if (error) {
-      resumoAcoes.textContent = "Não foi possível carregar as ações.";
-      return;
-    }
+if (error) {
+resumoAcoes.textContent = "Não foi possível carregar as ações.";
+return;
+}
 
-    const pendentes = data.filter(
-      acao => acao.status === "pendente"
-    );
+const pendentes = data.filter(
+acao => acao.status === "pendente"
+);
 
-    resumoAcoes.textContent =
-      "Total de cadastros: " + data.length +
-      " | Aguardando aprovação: " + pendentes.length;
+resumoAcoes.textContent =
+"Total de cadastros: " + data.length +
+" | Aguardando aprovação: " + pendentes.length;
 
-    if (data.length === 0) {
-      listaAcoes.appendChild(
-        criarTexto("p", "Nenhuma ação foi recebida até o momento.")
-      );
-      return;
-    }
+if (data.length === 0) {
+listaAcoes.appendChild(
+criarTexto("p", "Nenhuma ação foi recebida até o momento.")
+);
+return;
+}
 
-    data.forEach(acao => {
-      const cartao = document.createElement("article");
-      cartao.className = "cartao";
+data.forEach(acao => {
+const cartao = document.createElement("article");
+cartao.className = "cartao";
 
-      cartao.appendChild(criarTexto("h3", acao.titulo || "Sem título"));
-      cartao.appendChild(criarTexto("p", "Professor: " + (acao.professor || "")));
-      cartao.appendChild(criarTexto("p", "Escola: " + (acao.escola || "")));
-      cartao.appendChild(criarTexto("p", "Turma: " + (acao.turma || "Não informada")));
+cartao.appendChild(criarTexto("h3", acao.titulo || "Sem título"));
+cartao.appendChild(criarTexto("p", "Professor: " + (acao.professor || "")));
+cartao.appendChild(criarTexto("p", "Escola: " + (acao.escola || "")));
+cartao.appendChild(criarTexto("p", "Turma: " + (acao.turma || "Não informada")));
 
-      if (acao.data_acao) {
-        const dataFormatada = new Date(
-          acao.data_acao + "T12:00:00"
-        ).toLocaleDateString("pt-BR");
+if (acao.data_acao) {
+const dataFormatada = new Date(
+acao.data_acao + "T12:00:00"
+).toLocaleDateString("pt-BR");
 
-        cartao.appendChild(criarTexto("p", "Data: " + dataFormatada));
-      }
+cartao.appendChild(criarTexto("p", "Data: " + dataFormatada));
+}
 
-      cartao.appendChild(
-        criarTexto("p", "Descrição: " + (acao.descricao || ""))
-      );
+cartao.appendChild(
+criarTexto("p", "Descrição: " + (acao.descricao || ""))
+);
 
-      cartao.appendChild(
-        criarTexto("p", "Situação: " + acao.status)
-      );
+cartao.appendChild(
+criarTexto("p", "Situação: " + acao.status)
+);
 
-      if (acao.status === "pendente") {
-        const botaoAprovar = criarTexto("button", "Aprovar publicação");
-        botaoAprovar.type = "button";
-        botaoAprovar.className = "aprovar";
+if (acao.status === "pendente") {
+const botaoAprovar = criarTexto("button", "Aprovar publicação");
+botaoAprovar.type = "button";
+botaoAprovar.className = "aprovar";
 
-        botaoAprovar.addEventListener("click", function() {
-          alterarStatusAcao(acao.id, "aprovada");
-        });
+botaoAprovar.addEventListener("click", function() {
+alterarStatusAcao(acao.id, "aprovada");
+});
 
-        const botaoRejeitar = criarTexto("button", "Rejeitar cadastro");
-        botaoRejeitar.type = "button";
-        botaoRejeitar.className = "rejeitar";
+const botaoRejeitar = criarTexto("button", "Rejeitar cadastro");
+botaoRejeitar.type = "button";
+botaoRejeitar.className = "rejeitar";
 
-        botaoRejeitar.addEventListener("click", function() {
-          if (confirm("Deseja realmente rejeitar esta ação?")) {
-            alterarStatusAcao(acao.id, "rejeitada");
-          }
-        });
+botaoRejeitar.addEventListener("click", function() {
+if (confirm("Deseja realmente rejeitar esta ação?")) {
+alterarStatusAcao(acao.id, "rejeitada");
+}
+});
 
-        cartao.appendChild(botaoAprovar);
-        cartao.appendChild(botaoRejeitar);
-      }
+cartao.appendChild(botaoAprovar);
+cartao.appendChild(botaoRejeitar);
+}
 
-      listaAcoes.appendChild(cartao);
-    });
-  }
+listaAcoes.appendChild(cartao);
+});
+}
 
-  async function alterarStatusAcao(id, novoStatus) {
-    if (!usuarioAtual) return;
+async function alterarStatusAcao(id, novoStatus) {
+if (!usuarioAtual) return;
 
-    const confirmou = novoStatus === "aprovada"
-      ? confirm("Deseja aprovar esta ação para publicação?")
-      : true;
+const confirmou = novoStatus === "aprovada"
+? confirm("Deseja aprovar esta ação para publicação?")
+: true;
 
-    if (!confirmou) return;
+if (!confirmou) return;
 
-    const { error } = await supabaseClient
-      .from("acoes")
-      .update({ status: novoStatus })
-      .eq("id", id);
+const { error } = await supabaseClient
+.from("acoes")
+.update({ status: novoStatus })
+.eq("id", id);
 
-    if (error) {
-      alert("Não foi possível atualizar a ação. Verifique as permissões.");
-      return;
-    }
+if (error) {
+alert("Não foi possível atualizar a ação. Verifique as permissões.");
+return;
+}
 
-    alert(
-      novoStatus === "aprovada"
-        ? "Ação aprovada com sucesso!"
-        : "Cadastro rejeitado."
-    );
+alert(
+novoStatus === "aprovada"
+? "Ação aprovada com sucesso!"
+: "Cadastro rejeitado."
+);
 
-    await carregarAcoes();
-  }
+await carregarAcoes();
+}
 
-  // GERENCIAMENTO DE MATERIAIS PEDAGÓGICOS
+// GERENCIAMENTO DE MATERIAIS PEDAGÓGICOS
 
-  async function carregarMateriais() {
-    listaMateriais.replaceChildren();
-    resumoMateriais.textContent = "Carregando materiais...";
+async function carregarMateriais() {
+listaMateriais.replaceChildren();
+resumoMateriais.textContent = "Carregando materiais...";
 
-    const { data, error } = await supabaseClient
-      .from("materiais")
-      .select("*")
-      .order("criado_em", { ascending: false });
+const { data, error } = await supabaseClient
+.from("materiais")
+.select("*")
+.order("criado_em", { ascending: false });
 
-    if (error) {
-      resumoMateriais.textContent =
-        "Não foi possível carregar os materiais. Verifique as permissões da tabela.";
-      return;
-    }
+if (error) {
+resumoMateriais.textContent =
+"Não foi possível carregar os materiais. Verifique as permissões da tabela.";
+return;
+}
 
-    const pendentes = data.filter(
-      material => material.status === "pendente"
-    );
+const pendentes = data.filter(
+material => material.status === "pendente"
+);
 
-    resumoMateriais.textContent =
-      "Total de materiais: " + data.length +
-      " | Aguardando aprovação: " + pendentes.length;
+resumoMateriais.textContent =
+"Total de materiais: " + data.length +
+" | Aguardando aprovação: " + pendentes.length;
 
-    if (data.length === 0) {
-      listaMateriais.appendChild(
-        criarTexto("p", "Nenhum material foi recebido até o momento.")
-      );
-      return;
-    }
+if (data.length === 0) {
+listaMateriais.appendChild(
+criarTexto("p", "Nenhum material foi recebido até o momento.")
+);
+return;
+}
 
-    for (const material of data) {
-      const cartao = document.createElement("article");
-      cartao.className = "cartao";
+for (const material of data) {
+const cartao = document.createElement("article");
+cartao.className = "cartao";
 
-      cartao.appendChild(
-        criarTexto("h3", material.titulo || "Material sem título")
-      );
+cartao.appendChild(
+criarTexto("h3", material.titulo || "Material sem título")
+);
 
-      cartao.appendChild(
-        criarTexto("p", "Categoria: " + (material.categoria || "Não informada"))
-      );
+cartao.appendChild(
+criarTexto("p", "Categoria: " + (material.categoria || "Não informada"))
+);
 
-      cartao.appendChild(
-        criarTexto("p", "Descrição: " + (material.descricao || ""))
-      );
+cartao.appendChild(
+criarTexto("p", "Descrição: " + (material.descricao || ""))
+);
 
-      cartao.appendChild(
-        criarTexto("p", "Situação: " + material.status)
-      );
+cartao.appendChild(
+criarTexto("p", "Situação: " + material.status)
+);
 
-      if (material.criado_em) {
-        const dataFormatada = new Date(
-          material.criado_em
-        ).toLocaleString("pt-BR");
+if (material.criado_em) {
+const dataFormatada = new Date(
+material.criado_em
+).toLocaleString("pt-BR");
 
-        cartao.appendChild(
-          criarTexto("p", "Recebido em: " + dataFormatada)
-        );
-      }
+cartao.appendChild(
+criarTexto("p", "Recebido em: " + dataFormatada)
+);
+}
 
-      if (material.arquivo_url) {
-        const { data: arquivo, error: erroArquivo } =
-          await supabaseClient.storage
-            .from("arquivos")
-            .createSignedUrl(material.arquivo_url, 3600);
+if (material.arquivo_url) {
+const { data: arquivo, error: erroArquivo } =
+await supabaseClient.storage
+.from("arquivos")
+.createSignedUrl(material.arquivo_url, 3600);
 
-        if (!erroArquivo && arquivo) {
-          const link = document.createElement("a");
-          link.className = "link-pdf";
-          link.href = arquivo.signedUrl;
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
-          link.textContent = "📄 Visualizar PDF";
+if (!erroArquivo && arquivo) {
+const link = document.createElement("a");
+link.className = "link-pdf";
+link.href = arquivo.signedUrl;
+link.target = "_blank";
+link.rel = "noopener noreferrer";
+link.textContent = "📄 Visualizar PDF";
 
-          cartao.appendChild(link);
-        } else {
-          cartao.appendChild(
-            criarTexto("p", "Não foi possível gerar o acesso ao PDF.")
-          );
-        }
-      }
+cartao.appendChild(link);
+} else {
+cartao.appendChild(
+criarTexto("p", "Não foi possível gerar o acesso ao PDF.")
+);
+}
+}
 
-      if (material.status === "pendente") {
-        const botaoAprovar = criarTexto("button", "Aprovar material");
-        botaoAprovar.type = "button";
-        botaoAprovar.className = "aprovar";
+if (material.status === "pendente") {
+const botaoAprovar = criarTexto("button", "Aprovar material");
+botaoAprovar.type = "button";
+botaoAprovar.className = "aprovar";
 
-        botaoAprovar.addEventListener("click", function() {
-          alterarStatusMaterial(material.id, "aprovado");
-        });
+botaoAprovar.addEventListener("click", function() {
+alterarStatusMaterial(material.id, "aprovado");
+});
 
-        const botaoRejeitar = criarTexto("button", "Rejeitar material");
-        botaoRejeitar.type = "button";
-        botaoRejeitar.className = "rejeitar";
+const botaoRejeitar = criarTexto("button", "Rejeitar material");
+botaoRejeitar.type = "button";
+botaoRejeitar.className = "rejeitar";
 
-        botaoRejeitar.addEventListener("click", function() {
-          if (confirm("Deseja realmente rejeitar este material?")) {
-            alterarStatusMaterial(material.id, "rejeitado");
-          }
-        });
+botaoRejeitar.addEventListener("click", function() {
+if (confirm("Deseja realmente rejeitar este material?")) {
+alterarStatusMaterial(material.id, "rejeitado");
+}
+});
 
-        cartao.appendChild(botaoAprovar);
-        cartao.appendChild(botaoRejeitar);
-      }
+cartao.appendChild(botaoAprovar);
+cartao.appendChild(botaoRejeitar);
+}
 
-      listaMateriais.appendChild(cartao);
-    }
-  }
+listaMateriais.appendChild(cartao);
+}
+}
 
-  async function alterarStatusMaterial(id, novoStatus) {
-    if (!usuarioAtual) return;
+async function alterarStatusMaterial(id, novoStatus) {
+if (!usuarioAtual) return;
 
-    if (novoStatus === "aprovado") {
-      const confirmou = confirm(
-        "Deseja aprovar este material para publicação na área pública?"
-      );
+if (novoStatus === "aprovado") {
+const confirmou = confirm(
+"Deseja aprovar este material para publicação na área pública?"
+);
 
-      if (!confirmou) return;
-    }
+if (!confirmou) return;
+}
 
-    const { error } = await supabaseClient
-      .from("materiais")
-      .update({ status: novoStatus })
-      .eq("id", id);
+const { error } = await supabaseClient
+.from("materiais")
+.update({ status: novoStatus })
+.eq("id", id);
 
-    if (error) {
-      alert(
-        "Não foi possível atualizar o material. Verifique as permissões da tabela."
-      );
-      return;
-    }
+if (error) {
+alert(
+"Não foi possível atualizar o material. Verifique as permissões da tabela."
+);
+return;
+}
 
-    alert(
-      novoStatus === "aprovado"
-        ? "Material aprovado! Ele poderá aparecer na página pública."
-        : "Material rejeitado."
-    );
+alert(
+novoStatus === "aprovado"
+? "Material aprovado! Ele poderá aparecer na página pública."
+: "Material rejeitado."
+);
 
-    await carregarMateriais();
-  }
+await carregarMateriais();
+}
 
 // GERENCIAMENTO DE ESCOLAS
 
 async function carregarEscolas() {
-  listaEscolas.replaceChildren();
-  resumoEscolas.textContent = "Carregando escolas...";
+listaEscolas.replaceChildren();
+resumoEscolas.textContent = "Carregando escolas...";
 
-  const { data, error } = await supabaseClient
-    .from("escolas")
-    .select("*")
-    .order("nome", { ascending: true });
+const { data, error } = await supabaseClient
+.from("escolas")
+.select("*")
+.order("nome", { ascending: true });
 
-  if (error) {
-    resumoEscolas.textContent = "Erro ao carregar escolas.";
-    return;
-  }
+if (error) {
+resumoEscolas.textContent = "Erro ao carregar escolas.";
+return;
+}
 
-  resumoEscolas.textContent =
-    "Total de escolas cadastradas: " + data.length;
+resumoEscolas.textContent =
+"Total de escolas cadastradas: " + data.length;
 
-  if (data.length === 0) {
-    listaEscolas.appendChild(
-      criarTexto("p", "Nenhuma escola cadastrada.")
-    );
-    return;
-  }
+if (data.length === 0) {
+listaEscolas.appendChild(
+criarTexto("p", "Nenhuma escola cadastrada.")
+);
+return;
+}
 
-  data.forEach(escola => {
-    const cartao = document.createElement("article");
-    cartao.className = "cartao";
+data.forEach(escola => {
+const cartao = document.createElement("article");
+cartao.className = "cartao";
 
-    cartao.appendChild(
-      criarTexto("h3", escola.nome)
-    );
+cartao.appendChild(
+criarTexto("h3", escola.nome)
+);
 
-    const botaoEditar = criarTexto("button", "Editar");
-    botaoEditar.type = "button";
-    botaoEditar.className = "principal";
+const botaoEditar = criarTexto("button", "Editar");
+botaoEditar.type = "button";
+botaoEditar.className = "principal";
 
-    botaoEditar.addEventListener("click", async function() {
-      const novoNome = prompt(
-        "Digite o novo nome da escola:",
-        escola.nome
-      );
+botaoEditar.addEventListener("click", async function() {
+const novoNome = prompt(
+"Digite o novo nome da escola:",
+escola.nome
+);
 
-      if (novoNome === null) return;
+if (novoNome === null) return;
 
-      const nome = novoNome.trim();
+const nome = novoNome.trim();
 
-      if (!nome) {
-        alert("O nome da escola não pode ficar vazio.");
-        return;
-      }
+if (!nome) {
+alert("O nome da escola não pode ficar vazio.");
+return;
+}
 
-      const { error } = await supabaseClient
-        .from("escolas")
-        .update({ nome: nome })
-        .eq("id", escola.id);
+const { error } = await supabaseClient
+.from("escolas")
+.update({ nome: nome })
+.eq("id", escola.id);
 
-      if (error) {
-        alert(
-          error.code === "23505"
-            ? "Já existe uma escola com esse nome."
-            : "Não foi possível editar a escola."
-        );
-        return;
-      }
+if (error) {
+alert(
+error.code === "23505"
+? "Já existe uma escola com esse nome."
+: "Não foi possível editar a escola."
+);
+return;
+}
 
-      alert("Escola atualizada com sucesso!");
-      await carregarEscolas();
-    });
+alert("Escola atualizada com sucesso!");
+await carregarEscolas();
+});
 
-    const botaoExcluir = criarTexto("button", "Excluir");
-    botaoExcluir.type = "button";
-    botaoExcluir.className = "rejeitar";
+const botaoExcluir = criarTexto("button", "Excluir");
+botaoExcluir.type = "button";
+botaoExcluir.className = "rejeitar";
 
-    botaoExcluir.addEventListener("click", async function() {
-      const confirmou = confirm(
-        "Deseja realmente excluir a escola " + escola.nome + "?"
-      );
+botaoExcluir.addEventListener("click", async function() {
+const confirmou = confirm(
+"Deseja realmente excluir a escola " + escola.nome + "?"
+);
 
-      if (!confirmou) return;
+if (!confirmou) return;
 
-      const { error } = await supabaseClient
-        .from("escolas")
-        .delete()
-        .eq("id", escola.id);
+const { error } = await supabaseClient
+.from("escolas")
+.delete()
+.eq("id", escola.id);
 
-      if (error) {
-        alert("Não foi possível excluir a escola.");
-        return;
-      }
+if (error) {
+alert("Não foi possível excluir a escola.");
+return;
+}
 
-      alert("Escola excluída com sucesso!");
-      await carregarEscolas();
-    });
+alert("Escola excluída com sucesso!");
+await carregarEscolas();
+});
 
-    cartao.appendChild(botaoEditar);
-    cartao.appendChild(botaoExcluir);
+cartao.appendChild(botaoEditar);
+cartao.appendChild(botaoExcluir);
 
-    listaEscolas.appendChild(cartao);
-  });
+listaEscolas.appendChild(cartao);
+});
 }
 
 // CADASTRAR ESCOLA
 
 formEscola.addEventListener("submit", async function(evento) {
-  evento.preventDefault();
+evento.preventDefault();
 
-  if (!usuarioAtual) return;
+if (!usuarioAtual) return;
 
-  const nome = nomeEscola.value.trim();
+const nome = nomeEscola.value.trim();
 
-  if (!nome) {
-    mensagem(mensagemEscola, "Digite o nome da escola.");
-    return;
-  }
+if (!nome) {
+mensagem(mensagemEscola, "Digite o nome da escola.");
+return;
+}
 
-  const botao = document.getElementById("botaoCadastrarEscola");
+const botao = document.getElementById("botaoCadastrarEscola");
 
-  botao.disabled = true;
-  botao.textContent = "Cadastrando...";
+botao.disabled = true;
+botao.textContent = "Cadastrando...";
 
-  try {
-    const { error } = await supabaseClient
-      .from("escolas")
-      .insert([{ nome: nome }]);
+try {
+const { error } = await supabaseClient
+.from("escolas")
+.insert([{ nome: nome }]);
 
-    if (error) {
-      if (error.code === "23505") {
-        mensagem(
-          mensagemEscola,
-          "Essa escola já está cadastrada."
-        );
-        return;
-      }
+if (error) {
+if (error.code === "23505") {
+mensagem(
+mensagemEscola,
+"Essa escola já está cadastrada."
+);
+return;
+}
 
-      throw error;
-    }
+throw error;
+}
 
-    mensagem(
-      mensagemEscola,
-      "Escola cadastrada com sucesso!",
-      true
-    );
+mensagem(
+mensagemEscola,
+"Escola cadastrada com sucesso!",
+true
+);
 
-    formEscola.reset();
+formEscola.reset();
 
-    await carregarEscolas();
+await carregarEscolas();
 
-  } catch (erro) {
-    console.error("Erro ao cadastrar escola:", erro);
+} catch (erro) {
+console.error("Erro ao cadastrar escola:", erro);
 
-    mensagem(
-      mensagemEscola,
-      "Não foi possível cadastrar a escola. Verifique as permissões."
-    );
-  } finally {
-    botao.disabled = false;
-    botao.textContent = "Cadastrar escola";
-  }
+mensagem(
+mensagemEscola,
+"Não foi possível cadastrar a escola. Verifique as permissões."
+);
+} finally {
+botao.disabled = false;
+botao.textContent = "Cadastrar escola";
+}
 });
 
-  // ATUALIZAÇÃO DAS LISTAS
+// ATUALIZAÇÃO DAS LISTAS
 
-  document.getElementById("botaoAtualizarAcoes").addEventListener(
-    "click",
-    carregarAcoes
-  );
-document.getElementById("botaoAtualizarEscolas").addEventListener(
-  "click",
-  carregarEscolas
+document.getElementById("botaoAtualizarAcoes").addEventListener(
+"click",
+carregarAcoes
 );
-  document.getElementById("botaoAtualizarMateriais").addEventListener(
-    "click",
-    carregarMateriais
-  );
+document.getElementById("botaoAtualizarEscolas").addEventListener(
+"click",
+carregarEscolas
+);
+document.getElementById("botaoAtualizarMateriais").addEventListener(
+"click",
+carregarMateriais
+);
 
-  // SAIR DO PAINEL
+// SAIR DO PAINEL
 
-  document.getElementById("botaoSair").addEventListener(
-    "click",
-    async function() {
-      await supabaseClient.auth.signOut();
+document.getElementById("botaoSair").addEventListener(
+"click",
+async function() {
+await supabaseClient.auth.signOut();
 
-      usuarioAtual = null;
-      areaAdministrativa.hidden = true;
-      areaLogin.hidden = false;
+usuarioAtual = null;
+areaAdministrativa.hidden = true;
+areaLogin.hidden = false;
 
-      formLogin.reset();
-      listaAcoes.replaceChildren();
-      listaMateriais.replaceChildren();
+formLogin.reset();
+listaAcoes.replaceChildren();
+listaMateriais.replaceChildren();
 listaEscolas.replaceChildren();
-      resumoAcoes.textContent = "";
-      resumoMateriais.textContent = "";
-      mensagemLogin.textContent = "";
-    }
-  );
+resumoAcoes.textContent = "";
+resumoMateriais.textContent = "";
+mensagemLogin.textContent = "";
+}
+);
 
-  // VERIFICAR SESSÃO EXISTENTE
+// VERIFICAR SESSÃO EXISTENTE
 
-  async function iniciarPainel() {
-    const { data, error } = await supabaseClient.auth.getSession();
+async function iniciarPainel() {
+const { data, error } = await supabaseClient.auth.getSession();
 
-    if (!error && data.session) {
-      await verificarAdministrador(data.session.user);
-    }
-  }
+if (!error && data.session) {
+await verificarAdministrador(data.session.user);
+}
+}
 
-  iniciarPainel();
-</script>
-
-</body>
+iniciarPainel();
+</script></body>
 </html>
