@@ -65,6 +65,8 @@ line-height:1.6;
 
 <p>Selecione uma escola para visualizar todas as ações aprovadas.</p>
 
+<div id="estatisticasRede" class="estatisticas-rede"></div>
+
 <div id="listaEscolas" class="grade-escolas"></div>
 
 </main>
@@ -107,22 +109,72 @@ async function carregarEscolas() {
     }
 
     const escolas = resultadoEscolas.data || [];
-    const acoes = resultadoAcoes.data || [];
+const acoes = resultadoAcoes.data || [];
 
-    lista.innerHTML = "";
+lista.innerHTML = "";
 
-    if (escolas.length === 0) {
-        lista.textContent = "Ainda não há escolas cadastradas.";
-        return;
-    }
+function normalizarNome(nome) {
+    return (nome || "")
+        .trim()
+        .replace(/\.$/, "")
+        .toLocaleLowerCase("pt-BR");
+}
 
-    function normalizarNome(nome) {
-        return (nome || "")
-            .trim()
-            .replace(/\.$/, "")
-            .toLocaleLowerCase("pt-BR");
-    }
+// Calcula as estatísticas da rede
+const totalEscolas = escolas.length;
 
+const totalAcoes = resultadoAcoes.error
+    ? null
+    : acoes.length;
+
+const escolasComAcoes = resultadoAcoes.error
+    ? null
+    : escolas.filter(escola =>
+        acoes.some(acao =>
+            normalizarNome(acao.escola) ===
+            normalizarNome(escola.nome)
+        )
+    ).length;
+
+const escolasSemAcoes = escolasComAcoes === null
+    ? null
+    : totalEscolas - escolasComAcoes;
+
+// Exibe as estatísticas
+const painel = document.getElementById("estatisticasRede");
+
+if (painel) {
+    painel.innerHTML = `
+        <div class="cartao-estatistica">
+            <span>🏫</span>
+            <strong>${totalEscolas}</strong>
+            <p>Escolas cadastradas</p>
+        </div>
+
+        <div class="cartao-estatistica">
+            <span>📚</span>
+            <strong>${totalAcoes ?? "—"}</strong>
+            <p>Ações publicadas</p>
+        </div>
+
+        <div class="cartao-estatistica">
+            <span>🟢</span>
+            <strong>${escolasComAcoes ?? "—"}</strong>
+            <p>Escolas com ações</p>
+        </div>
+
+        <div class="cartao-estatistica">
+            <span>⏳</span>
+            <strong>${escolasSemAcoes ?? "—"}</strong>
+            <p>Escolas sem ações</p>
+        </div>
+    `;
+}
+
+if (escolas.length === 0) {
+    lista.textContent = "Ainda não há escolas cadastradas.";
+    return;
+}
     escolas.forEach(escola => {
         const cartao = document.createElement("div");
         cartao.className = "cartao-escola";
