@@ -160,7 +160,61 @@ async function carregarEscolas() {
             window.location.href =
                 "escola.html?nome=" + encodeURIComponent(escola.nome);
         });
+escolas.forEach(escola => {
+    const cartao = document.createElement("div");
+    cartao.className = "cartao-escola";
 
+    const titulo = document.createElement("h3");
+    titulo.textContent = escola.nome;
+
+    const descricao = document.createElement("p");
+    descricao.textContent =
+        "Clique para visualizar as ações desta escola.";
+
+    const quantidade = document.createElement("p");
+
+    const total = resultadoAcoes.error
+        ? null
+        : acoes.filter(acao =>
+            normalizarNome(acao.escola) ===
+            normalizarNome(escola.nome)
+        ).length;
+
+    const indicador = document.createElement("span");
+    indicador.className = "indicador-escola";
+
+    if (total === null) {
+        quantidade.textContent =
+            "Não foi possível carregar a quantidade de ações.";
+        indicador.textContent = "Quantidade indisponível";
+        indicador.classList.add("indicador-indisponivel");
+
+    } else if (total === 0) {
+        quantidade.textContent = "Nenhuma ação publicada.";
+        indicador.textContent = "Aguardando ações";
+        indicador.classList.add("indicador-sem-acoes");
+
+    } else {
+        quantidade.textContent = total === 1
+            ? "1 ação publicada."
+            : total + " ações publicadas.";
+
+        indicador.textContent = "Com ações publicadas";
+        indicador.classList.add("indicador-com-acoes");
+    }
+
+    cartao.appendChild(indicador);
+    cartao.appendChild(titulo);
+    cartao.appendChild(descricao);
+    cartao.appendChild(quantidade);
+
+    cartao.addEventListener("click", () => {
+        window.location.href =
+            "escola.html?nome=" + encodeURIComponent(escola.nome);
+    });
+
+    lista.appendChild(cartao);
+});
         lista.appendChild(cartao);
     });
 }
