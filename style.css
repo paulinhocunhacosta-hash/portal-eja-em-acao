@@ -340,3 +340,45 @@ footer {
     background: #fef3c7;
     color: #92400e;
 }
+/* Painel de estatísticas da Rede EJA */
+
+.estatisticas-rede {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin: 25px 0;
+}
+
+.cartao-estatistica {
+    background: #ffffff;
+    padding: 22px 15px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    border-top: 4px solid #155e75;
+}
+
+.cartao-estatistica span {
+    display: block;
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.cartao-estatistica strong {
+    display: block;
+    font-size: 30px;
+    color: #155e75;
+}
+
+.cartao-estatistica p {
+    margin-top: 7px;
+    font-size: 14px;
+    color: #475569;
+}
+
+@media (max-width: 700px) {
+    .estatisticas-rede {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
