@@ -255,9 +255,57 @@ async function carregarEscolas() {
 
         });
 
-        lista.appendChild(cartao);
+               lista.appendChild(cartao);
 
     });
+
+    // PESQUISA DE ESCOLAS PELO NOME
+
+    const campoPesquisa = document.getElementById("pesquisaEscola");
+
+    if (campoPesquisa) {
+
+        campoPesquisa.addEventListener("input", () => {
+
+            const termo = campoPesquisa.value
+                .trim()
+                .toLocaleLowerCase("pt-BR");
+
+            const cartoes = lista.querySelectorAll(".cartao-escola");
+
+            let encontrados = 0;
+
+            cartoes.forEach(cartao => {
+
+                const nome = cartao.querySelector("h3")
+                    .textContent
+                    .toLocaleLowerCase("pt-BR");
+
+                const corresponde = nome.includes(termo);
+
+                cartao.style.display = corresponde ? "" : "none";
+
+                if (corresponde) {
+                    encontrados++;
+                }
+
+            });
+
+            let mensagem = lista.querySelector(".mensagem-pesquisa");
+
+            if (!mensagem) {
+                mensagem = document.createElement("p");
+                mensagem.className = "mensagem-pesquisa";
+                lista.appendChild(mensagem);
+            }
+
+            mensagem.textContent = termo && encontrados === 0
+                ? "Nenhuma escola encontrada."
+                : "";
+
+        });
+
+    }
 
 }
 
