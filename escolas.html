@@ -271,51 +271,61 @@ cartao.dataset.filtro = total === null
 
     });
 
-    // PESQUISA DE ESCOLAS PELO NOME
+    // PESQUISA E FILTRO DE ESCOLAS
 
-    const campoPesquisa = document.getElementById("pesquisaEscola");
+const campoPesquisa = document.getElementById("pesquisaEscola");
+const filtroEscolas = document.getElementById("filtroEscolas");
 
-    if (campoPesquisa) {
+function aplicarFiltros() {
 
-        campoPesquisa.addEventListener("input", () => {
+    const termo = campoPesquisa.value
+        .trim()
+        .toLocaleLowerCase("pt-BR");
 
-            const termo = campoPesquisa.value
-                .trim()
-                .toLocaleLowerCase("pt-BR");
+    const filtro = filtroEscolas.value;
 
-            const cartoes = lista.querySelectorAll(".cartao-escola");
+    const cartoes = lista.querySelectorAll(".cartao-escola");
 
-            let encontrados = 0;
+    let encontrados = 0;
 
-            cartoes.forEach(cartao => {
+    cartoes.forEach(cartao => {
 
-                const nome = cartao.querySelector("h3")
-                    .textContent
-                    .toLocaleLowerCase("pt-BR");
+        const nome = cartao.querySelector("h3")
+            .textContent
+            .toLocaleLowerCase("pt-BR");
 
-                const corresponde = nome.includes(termo);
+        const correspondeNome = nome.includes(termo);
 
-                cartao.style.display = corresponde ? "" : "none";
+        const correspondeFiltro =
+            filtro === "todas" ||
+            cartao.dataset.filtro === filtro;
 
-                if (corresponde) {
-                    encontrados++;
-                }
+        const mostrar = correspondeNome && correspondeFiltro;
 
-            });
+        cartao.style.display = mostrar ? "" : "none";
 
-            let mensagem = lista.querySelector(".mensagem-pesquisa");
+        if (mostrar) {
+            encontrados++;
+        }
 
-            if (!mensagem) {
-                mensagem = document.createElement("p");
-                mensagem.className = "mensagem-pesquisa";
-                lista.appendChild(mensagem);
-            }
+    });
 
-            mensagem.textContent = termo && encontrados === 0
-                ? "Nenhuma escola encontrada."
-                : "";
+    let mensagem = lista.querySelector(".mensagem-pesquisa");
 
-        });
+    if (!mensagem) {
+        mensagem = document.createElement("p");
+        mensagem.className = "mensagem-pesquisa";
+        lista.appendChild(mensagem);
+    }
+
+    mensagem.textContent = encontrados === 0
+        ? "Nenhuma escola encontrada com esses critérios."
+        : "";
+
+}
+
+campoPesquisa.oninput = aplicarFiltros;
+filtroEscolas.onchange = aplicarFiltros;
 
     }
 
