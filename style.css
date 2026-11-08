@@ -382,3 +382,24 @@ footer {
         gap: 12px;
     }
 }
+/* Barra de pesquisa das escolas */
+
+.area-pesquisa-escolas {
+    margin: 25px 0;
+}
+
+#pesquisaEscola {
+    width: 100%;
+    padding: 15px 18px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+    box-sizing: border-box;
+    transition: 0.3s;
+}
+
+#pesquisaEscola:focus {
+    border-color: #155e75;
+    box-shadow: 0 0 0 3px rgba(21, 94, 117, 0.12);
+}
