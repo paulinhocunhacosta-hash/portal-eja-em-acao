@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,39 +8,39 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-.pagina-escolas{
-max-width:1100px;
-margin:40px auto;
-padding:20px;
+.pagina-escolas {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 20px;
 }
 
-.grade-escolas{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-gap:22px;
-margin-top:25px;
+.grade-escolas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 22px;
+    margin-top: 25px;
 }
 
-.cartao-escola{
-background:#fff;
-padding:22px;
-border-radius:12px;
-box-shadow:0 4px 14px rgba(0,0,0,.08);
-cursor:pointer;
-transition:.3s;
+.cartao-escola {
+    background: #fff;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.08);
+    cursor: pointer;
+    transition: .3s;
 }
 
-.cartao-escola:hover{
-transform:translateY(-4px);
+.cartao-escola:hover {
+    transform: translateY(-4px);
 }
 
-.cartao-escola h3{
-color:#155e75;
-margin-bottom:10px;
+.cartao-escola h3 {
+    color: #155e75;
+    margin-bottom: 10px;
 }
 
-.cartao-escola p{
-line-height:1.6;
+.cartao-escola p {
+    line-height: 1.6;
 }
 </style>
 </head>
@@ -47,54 +48,55 @@ line-height:1.6;
 <body>
 
 <header class="cabecalho">
-<div class="logo">
-<h1>PORTAL EJA EM AÇÃO</h1>
-<p>Educação, participação e transformação</p>
-</div>
+    <div class="logo">
+        <h1>PORTAL EJA EM AÇÃO</h1>
+        <p>Educação, participação e transformação</p>
+    </div>
 
-<nav>
-<a href="index.html">Início</a>
-<a href="acoes.html">Ações</a>
-<a href="materiais.html">Materiais</a>
-</nav>
+    <nav>
+        <a href="index.html">Início</a>
+        <a href="acoes.html">Ações</a>
+        <a href="materiais.html">Materiais</a>
+    </nav>
 </header>
 
 <main class="pagina-escolas">
 
-<h2>Escolas da Rede Municipal</h2>
+    <h2>Escolas da Rede Municipal</h2>
 
-<p>Selecione uma escola para visualizar todas as ações aprovadas.</p>
+    <p>Selecione uma escola para visualizar todas as ações aprovadas.</p>
 
-<div id="estatisticasRede" class="estatisticas-rede"></div>
+    <div id="estatisticasRede" class="estatisticas-rede"></div>
 
-<div class="area-pesquisa-escolas">
+    <div class="area-pesquisa-escolas">
 
-    <input
-        type="text"
-        id="pesquisaEscola"
-        placeholder="🔎 Pesquisar escola pelo nome..."
-        autocomplete="off"
-    >
+        <input
+            type="text"
+            id="pesquisaEscola"
+            placeholder="🔎 Pesquisar escola pelo nome..."
+            autocomplete="off"
+        >
 
-    <select id="filtroEscolas">
-        <option value="todas">Todas as escolas</option>
-        <option value="com-acoes">Com ações publicadas</option>
-        <option value="sem-acoes">Aguardando ações</option>
-    </select>
+        <select id="filtroEscolas">
+            <option value="todas">Todas as escolas</option>
+            <option value="com-acoes">Com ações publicadas</option>
+            <option value="sem-acoes">Aguardando ações</option>
+        </select>
 
-</div>
+    </div>
 
-<div id="listaEscolas" class="grade-escolas"></div>
+    <div id="listaEscolas" class="grade-escolas"></div>
+
 </main>
 
 <footer>
-<p>© 2026 Portal EJA em Ação</p>
+    <p>© 2026 Portal EJA em Ação</p>
 </footer>
 
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
- <script>
+
+<script>
 
 async function carregarEscolas() {
 
@@ -155,11 +157,7 @@ async function carregarEscolas() {
                 normalizarNome(escola.nome)
             )
         ).length;
-cartao.dataset.filtro = total === null
-    ? "indisponivel"
-    : total > 0
-        ? "com-acoes"
-        : "sem-acoes";
+
     const escolasSemAcoes = escolasComAcoes === null
         ? null
         : totalEscolas - escolasComAcoes;
@@ -222,6 +220,14 @@ cartao.dataset.filtro = total === null
                 normalizarNome(escola.nome)
             ).length;
 
+        // IDENTIFICA A SITUAÇÃO DA ESCOLA PARA O FILTRO
+
+        cartao.dataset.filtro = total === null
+            ? "indisponivel"
+            : total > 0
+                ? "com-acoes"
+                : "sem-acoes";
+
         // INDICADOR VISUAL
 
         const indicador = document.createElement("span");
@@ -267,67 +273,65 @@ cartao.dataset.filtro = total === null
 
         });
 
-               lista.appendChild(cartao);
+        lista.appendChild(cartao);
 
     });
 
     // PESQUISA E FILTRO DE ESCOLAS
 
-const campoPesquisa = document.getElementById("pesquisaEscola");
-const filtroEscolas = document.getElementById("filtroEscolas");
+    const campoPesquisa = document.getElementById("pesquisaEscola");
+    const filtroEscolas = document.getElementById("filtroEscolas");
 
-function aplicarFiltros() {
+    function aplicarFiltros() {
 
-    const termo = campoPesquisa.value
-        .trim()
-        .toLocaleLowerCase("pt-BR");
-
-    const filtro = filtroEscolas.value;
-
-    const cartoes = lista.querySelectorAll(".cartao-escola");
-
-    let encontrados = 0;
-
-    cartoes.forEach(cartao => {
-
-        const nome = cartao.querySelector("h3")
-            .textContent
+        const termo = campoPesquisa.value
+            .trim()
             .toLocaleLowerCase("pt-BR");
 
-        const correspondeNome = nome.includes(termo);
+        const filtro = filtroEscolas.value;
 
-        const correspondeFiltro =
-            filtro === "todas" ||
-            cartao.dataset.filtro === filtro;
+        const cartoes = lista.querySelectorAll(".cartao-escola");
 
-        const mostrar = correspondeNome && correspondeFiltro;
+        let encontrados = 0;
 
-        cartao.style.display = mostrar ? "" : "none";
+        cartoes.forEach(cartao => {
 
-        if (mostrar) {
-            encontrados++;
+            const nome = cartao.querySelector("h3")
+                .textContent
+                .toLocaleLowerCase("pt-BR");
+
+            const correspondeNome = nome.includes(termo);
+
+            const correspondeFiltro =
+                filtro === "todas" ||
+                cartao.dataset.filtro === filtro;
+
+            const mostrar = correspondeNome && correspondeFiltro;
+
+            cartao.style.display = mostrar ? "" : "none";
+
+            if (mostrar) {
+                encontrados++;
+            }
+
+        });
+
+        let mensagem = lista.querySelector(".mensagem-pesquisa");
+
+        if (!mensagem) {
+            mensagem = document.createElement("p");
+            mensagem.className = "mensagem-pesquisa";
+            lista.appendChild(mensagem);
         }
 
-    });
-
-    let mensagem = lista.querySelector(".mensagem-pesquisa");
-
-    if (!mensagem) {
-        mensagem = document.createElement("p");
-        mensagem.className = "mensagem-pesquisa";
-        lista.appendChild(mensagem);
-    }
-
-    mensagem.textContent = encontrados === 0
-        ? "Nenhuma escola encontrada com esses critérios."
-        : "";
-
-}
-
-campoPesquisa.oninput = aplicarFiltros;
-filtroEscolas.onchange = aplicarFiltros;
+        mensagem.textContent = encontrados === 0
+            ? "Nenhuma escola encontrada com esses critérios."
+            : "";
 
     }
+
+    campoPesquisa.oninput = aplicarFiltros;
+    filtroEscolas.onchange = aplicarFiltros;
 
 }
 
