@@ -68,12 +68,20 @@ line-height:1.6;
 <div id="estatisticasRede" class="estatisticas-rede"></div>
 
 <div class="area-pesquisa-escolas">
+
     <input
         type="text"
         id="pesquisaEscola"
         placeholder="🔎 Pesquisar escola pelo nome..."
         autocomplete="off"
     >
+
+    <select id="filtroEscolas">
+        <option value="todas">Todas as escolas</option>
+        <option value="com-acoes">Com ações publicadas</option>
+        <option value="sem-acoes">Aguardando ações</option>
+    </select>
+
 </div>
 
 <div id="listaEscolas" class="grade-escolas"></div>
