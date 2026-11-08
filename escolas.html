@@ -155,7 +155,11 @@ async function carregarEscolas() {
                 normalizarNome(escola.nome)
             )
         ).length;
-
+cartao.dataset.filtro = total === null
+    ? "indisponivel"
+    : total > 0
+        ? "com-acoes"
+        : "sem-acoes";
     const escolasSemAcoes = escolasComAcoes === null
         ? null
         : totalEscolas - escolasComAcoes;
