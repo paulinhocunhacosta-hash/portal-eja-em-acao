@@ -294,86 +294,138 @@ botao.textContent = "Entrar no painel";
 
 // GERENCIAMENTO DE AÇÕES E PROJETOS
 
+
 async function carregarAcoes() {
-listaAcoes.replaceChildren();
-resumoAcoes.textContent = "Carregando ações...";
+  listaAcoes.replaceChildren();
+  resumoAcoes.textContent = "Carregando ações...";
 
-const { data, error } = await supabaseClient
-.from("acoes")
-.select("*")
-.order("criado_em", { ascending: false });
+  const { data, error } = await supabaseClient
+    .from("acoes")
+    .select("*")
+    .order("criado_em", { ascending: false });
 
-if (error) {
-resumoAcoes.textContent = "Não foi possível carregar as ações.";
-return;
+  if (error) {
+    resumoAcoes.textContent = "Não foi possível carregar as ações.";
+    return;
+  }
+
+  const pendentes = data.filter(
+    acao => acao.status === "pendente"
+  );
+
+  resumoAcoes.textContent =
+    "Total de cadastros: " + data.length +
+    " | Aguardando aprovação: " + pendentes.length;
+
+  if (data.length === 0) {
+    listaAcoes.appendChild(
+      criarTexto("p", "Nenhuma ação foi recebida até o momento.")
+    );
+    return;
+  }
+
+  for (const acao of data) {
+    const cartao = document.createElement("article");
+    cartao.className = "cartao";
+
+    cartao.appendChild(criarTexto("h3", acao.titulo || "Sem título"));
+    cartao.appendChild(criarTexto("p", "Professor: " + (acao.professor || "")));
+    cartao.appendChild(criarTexto("p", "Escola: " + (acao.escola || "")));
+    cartao.appendChild(criarTexto("p", "Turma: " + (acao.turma || "Não informada")));
+
+    if (acao.data_acao) {
+      const dataFormatada = new Date(
+        acao.data_acao + "T12:00:00"
+      ).toLocaleDateString("pt-BR");
+
+      cartao.appendChild(criarTexto("p", "Data: " + dataFormatada));
+    }
+
+    cartao.appendChild(
+      criarTexto("p", "Descrição: " + (acao.descricao || ""))
+    );
+
+    // Exibição das fotos
+    if (Array.isArray(acao.fotos) && acao.fotos.length > 0) {
+      cartao.appendChild(criarTexto("h4", "Fotos anexadas:"));
+
+      for (const caminhoFoto of acao.fotos) {
+        const { data: foto, error: erroFoto } =
+          await supabaseClient.storage
+            .from("arquivos")
+            .createSignedUrl(caminhoFoto, 3600);
+
+        if (erroFoto || !foto?.signedUrl) {
+          cartao.appendChild(
+            criarTexto("p", "Não foi possível carregar uma foto.")
+          );
+          continue;
+        }
+
+        const imagem = document.createElement("img");
+        imagem.src = foto.signedUrl;
+        imagem.alt = "Foto da ação";
+        imagem.style.maxWidth = "100%";
+        imagem.style.height = "auto";
+        imagem.style.marginBottom = "10px";
+
+        cartao.appendChild(imagem);
+      }
+    }
+
+    // Exibição do PDF
+    if (acao.documento_url) {
+      const { data: arquivo, error: erroArquivo } =
+        await supabaseClient.storage
+          .from("arquivos")
+          .createSignedUrl(acao.documento_url, 3600);
+
+      if (!erroArquivo && arquivo?.signedUrl) {
+        const linkPDF = document.createElement("a");
+        linkPDF.href = arquivo.signedUrl;
+        linkPDF.target = "_blank";
+        linkPDF.rel = "noopener noreferrer";
+        linkPDF.textContent = "Abrir ou baixar PDF";
+
+        cartao.appendChild(linkPDF);
+      } else {
+        cartao.appendChild(
+          criarTexto("p", "Não foi possível carregar o PDF.")
+        );
+      }
+    }
+
+    cartao.appendChild(
+      criarTexto("p", "Situação: " + acao.status)
+    );
+
+    if (acao.status === "pendente") {
+      const botaoAprovar = criarTexto("button", "Aprovar publicação");
+      botaoAprovar.type = "button";
+      botaoAprovar.className = "aprovar";
+
+      botaoAprovar.addEventListener("click", function() {
+        alterarStatusAcao(acao.id, "aprovada");
+      });
+
+      const botaoRejeitar = criarTexto("button", "Rejeitar cadastro");
+      botaoRejeitar.type = "button";
+      botaoRejeitar.className = "rejeitar";
+
+      botaoRejeitar.addEventListener("click", function() {
+        if (confirm("Deseja realmente rejeitar esta ação?")) {
+          alterarStatusAcao(acao.id, "rejeitada");
+        }
+      });
+
+      cartao.appendChild(botaoAprovar);
+      cartao.appendChild(botaoRejeitar);
+    }
+
+    listaAcoes.appendChild(cartao);
+  }
 }
 
-const pendentes = data.filter(
-acao => acao.status === "pendente"
-);
-
-resumoAcoes.textContent =
-"Total de cadastros: " + data.length +
-" | Aguardando aprovação: " + pendentes.length;
-
-if (data.length === 0) {
-listaAcoes.appendChild(
-criarTexto("p", "Nenhuma ação foi recebida até o momento.")
-);
-return;
-}
-
-data.forEach(acao => {
-const cartao = document.createElement("article");
-cartao.className = "cartao";
-
-cartao.appendChild(criarTexto("h3", acao.titulo || "Sem título"));
-cartao.appendChild(criarTexto("p", "Professor: " + (acao.professor || "")));
-cartao.appendChild(criarTexto("p", "Escola: " + (acao.escola || "")));
-cartao.appendChild(criarTexto("p", "Turma: " + (acao.turma || "Não informada")));
-
-if (acao.data_acao) {
-const dataFormatada = new Date(
-acao.data_acao + "T12:00:00"
-).toLocaleDateString("pt-BR");
-
-cartao.appendChild(criarTexto("p", "Data: " + dataFormatada));
-}
-
-cartao.appendChild(
-criarTexto("p", "Descrição: " + (acao.descricao || ""))
-);
-
-cartao.appendChild(
-criarTexto("p", "Situação: " + acao.status)
-);
-
-if (acao.status === "pendente") {
-const botaoAprovar = criarTexto("button", "Aprovar publicação");
-botaoAprovar.type = "button";
-botaoAprovar.className = "aprovar";
-
-botaoAprovar.addEventListener("click", function() {
-alterarStatusAcao(acao.id, "aprovada");
-});
-
-const botaoRejeitar = criarTexto("button", "Rejeitar cadastro");
-botaoRejeitar.type = "button";
-botaoRejeitar.className = "rejeitar";
-
-botaoRejeitar.addEventListener("click", function() {
-if (confirm("Deseja realmente rejeitar esta ação?")) {
-alterarStatusAcao(acao.id, "rejeitada");
-}
-});
-
-cartao.appendChild(botaoAprovar);
-cartao.appendChild(botaoRejeitar);
-}
-
-listaAcoes.appendChild(cartao);
-});
-}
 
 async function alterarStatusAcao(id, novoStatus) {
 if (!usuarioAtual) return;
