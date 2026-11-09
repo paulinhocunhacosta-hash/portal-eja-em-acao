@@ -287,8 +287,10 @@ footer {
     }
 
     .banner-imagem img {
-        height: 280px;
-    }
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
 
     .banner h2 {
         font-size: 36px;
