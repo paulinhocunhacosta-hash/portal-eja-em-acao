@@ -799,11 +799,20 @@ mensagemLogin.textContent = "";
 // VERIFICAR SESSÃO EXISTENTE
 
 async function iniciarPainel() {
-const { data, error } = await supabaseClient.auth.getSession();
+  const { data, error } = await supabaseClient.auth.getSession();
 
-if (!error && data.session) {
-await verificarAdministrador(data.session.user);
-}
+  if (error) {
+    console.error("Erro ao verificar sessão:", error);
+    return;
+  }
+
+  if (data.session) {
+    await verificarAdministrador(data.session.user);
+  } else {
+    usuarioAtual = null;
+    areaAdministrativa.hidden = true;
+    areaLogin.hidden = false;
+  }
 }
 
 iniciarPainel();
