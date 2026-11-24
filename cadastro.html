@@ -51,7 +51,7 @@
       margin: 17px 0 7px;
     }
 
-    input, textarea {
+    input, textarea, select {
       width: 100%;
       padding: 12px;
       border: 1px solid #cbd5e1;
@@ -112,6 +112,9 @@
       color: #155e75;
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
 </head>
 
 <body>
@@ -134,9 +137,11 @@
       <input type="text" id="professor" name="professor"
         maxlength="150" required>
 
-      <label for="escola">Escola *</label>
-      <input type="text" id="escola" name="escola"
-        maxlength="200" required>
+      <label for="escola_id">Escola *</label>
+      <select id="escola_id" name="escola_id" required disabled>
+        <option value="">Carregando escolas...</option>
+      </select>
+      <small id="estadoEscolas">Aguarde o carregamento das escolas.</small>
 
       <label for="turma">Turma</label>
       <input type="text" id="turma" name="turma"
@@ -171,8 +176,8 @@
         data-sitekey="0x4AAAAAAFoRspDRFyApHIJD">
       </div>
 
-      <button type="submit" id="botaoEnviar">
-        Enviar cadastro para aprovação
+      <button type="submit" id="botaoEnviar" disabled>
+        Carregando escolas...
       </button>
 
       <div id="resultado" role="status" aria-live="polite"></div>
@@ -193,11 +198,76 @@
     const formulario = document.getElementById("formularioAcao");
     const botao = document.getElementById("botaoEnviar");
     const resultado = document.getElementById("resultado");
+    const seletorEscola = document.getElementById("escola_id");
+    const estadoEscolas = document.getElementById("estadoEscolas");
+
+    let escolasCarregadas = false;
+
+    async function carregarEscolas() {
+      try {
+        const { data, error } = await supabaseClient
+          .from("escolas")
+          .select("id, nome")
+          .order("nome", { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          throw new Error("Nenhuma escola foi encontrada.");
+        }
+
+        seletorEscola.innerHTML = "";
+
+        const opcaoInicial = document.createElement("option");
+        opcaoInicial.value = "";
+        opcaoInicial.textContent = "Selecione sua escola";
+        seletorEscola.appendChild(opcaoInicial);
+
+        data.forEach(escola => {
+          const opcao = document.createElement("option");
+          opcao.value = escola.id;
+          opcao.textContent = escola.nome;
+          seletorEscola.appendChild(opcao);
+        });
+
+        seletorEscola.disabled = false;
+        estadoEscolas.textContent =
+          data.length + " escola(s) disponível(is) para seleção.";
+
+        escolasCarregadas = true;
+        botao.disabled = false;
+        botao.textContent = "Enviar cadastro para aprovação";
+
+      } catch (erro) {
+        console.error("Erro ao carregar escolas:", erro);
+
+        seletorEscola.innerHTML =
+          '<option value="">Não foi possível carregar as escolas</option>';
+
+        estadoEscolas.textContent =
+          "Atualize a página. Se o problema continuar, comunique a administração.";
+
+        mostrarMensagem(
+          "Não foi possível carregar a lista de escolas. O cadastro está temporariamente indisponível.",
+          false
+        );
+
+        botao.disabled = true;
+        botao.textContent = "Cadastro indisponível";
+      }
+    }
+
+    carregarEscolas();
 
     formulario.addEventListener("submit", async function(event) {
       event.preventDefault();
 
       resultado.style.display = "none";
+
+      if (!escolasCarregadas || !seletorEscola.value) {
+        mostrarMensagem("Selecione uma escola válida.", false);
+        return;
+      }
 
       const fotos = document.getElementById("fotos").files;
       const documento = document.getElementById("documento").files[0];
@@ -285,8 +355,10 @@
         }
 
       } finally {
-        botao.disabled = false;
-        botao.textContent = "Enviar cadastro para aprovação";
+        botao.disabled = !escolasCarregadas;
+        botao.textContent = escolasCarregadas
+          ? "Enviar cadastro para aprovação"
+          : "Cadastro indisponível";
       }
     });
 
