@@ -100,9 +100,7 @@
             Carregando ações e projetos...
         </p>
 
-        <a class="voltar" href="index.html">
-            ← Voltar à página inicial
-        </a>
+        <a class="voltar" href="index.html">← Voltar à página inicial</a>
     </main>
 
     <footer>
@@ -113,40 +111,66 @@
     <script src="supabase.js"></script>
 
     <script>
-    const lista = document.getElementById("listaAcoes");
-    const estadoVazio = document.getElementById("estadoVazio");
+    (async function () {
 
-    function criarElemento(tag, texto, classe) {
-        const elemento = document.createElement(tag);
+        const lista = document.getElementById("listaAcoes");
+        const estadoVazio = document.getElementById("estadoVazio");
 
-        if (texto !== undefined && texto !== null) {
-            elemento.textContent = texto;
+        function criarElemento(tag, texto, classe) {
+            const elemento = document.createElement(tag);
+
+            if (texto !== undefined && texto !== null) {
+                elemento.textContent = texto;
+            }
+
+            if (classe) {
+                elemento.className = classe;
+            }
+
+            return elemento;
         }
 
-        if (classe) {
-            elemento.className = classe;
+        function formatarData(data) {
+            if (!data) return "Não informada";
+
+            const partes = data.split("-");
+
+            if (partes.length === 3) {
+                return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            }
+
+            return data;
         }
-
-        return elemento;
-    }
-
-    async function carregarAcoes() {
-        lista.replaceChildren();
-        estadoVazio.hidden = false;
-        estadoVazio.textContent = "Carregando ações e projetos...";
 
         try {
+
+            // Busca somente as ações aprovadas
             const { data: acoes, error } = await supabaseClient
                 .from("acoes")
-                .select("*")
+                .select(`
+                    id,
+                    titulo,
+                    professor,
+                    escola,
+                    turma,
+                    data_acao,
+                    descricao,
+                    fotos,
+                    documento_url
+                `)
                 .eq("status", "aprovada")
-                .order("criado_em", { ascending: false });
+                .order("data_acao", { ascending: false });
 
             if (error) {
                 throw error;
             }
 
-            if (!acoes || acoes.length === 0) {
+            lista.innerHTML = "";
+
+            const registros = acoes || [];
+
+            if (registros.length === 0) {
+                estadoVazio.hidden = false;
                 estadoVazio.textContent =
                     "Ainda não há ações aprovadas para publicação.";
                 return;
@@ -154,7 +178,9 @@
 
             estadoVazio.hidden = true;
 
-            for (const acao of acoes) {
+            // Cria um cartão para cada ação aprovada
+            for (const acao of registros) {
+
                 const cartao = criarElemento(
                     "article",
                     undefined,
@@ -162,20 +188,20 @@
                 );
 
                 cartao.appendChild(
-                    criarElemento("h3", acao.titulo)
+                    criarElemento("h3", acao.titulo || "Ação sem título")
                 );
 
                 cartao.appendChild(
                     criarElemento(
                         "p",
-                        "Professor: " + (acao.professor || "")
+                        "Professor(a): " + (acao.professor || "Não informado")
                     )
                 );
 
                 cartao.appendChild(
                     criarElemento(
                         "p",
-                        "Escola: " + (acao.escola || "")
+                        "Escola: " + (acao.escola || "Não informada")
                     )
                 );
 
@@ -185,84 +211,94 @@
                     );
                 }
 
-                if (acao.data_acao) {
-                    const dataFormatada = new Date(
-                        acao.data_acao + "T12:00:00"
-                    ).toLocaleDateString("pt-BR");
-
-                    cartao.appendChild(
-                        criarElemento("p", "Data: " + dataFormatada)
-                    );
-                }
-
                 cartao.appendChild(
-                    criarElemento("p", acao.descricao || "")
+                    criarElemento(
+                        "p",
+                        "Data: " + formatarData(acao.data_acao)
+                    )
                 );
 
-                // Carregar fotos do armazenamento privado.
-                if (Array.isArray(acao.fotos) && acao.fotos.length) {
+                cartao.appendChild(
+                    criarElemento("p", acao.descricao || "Sem descrição.")
+                );
+
+                // Carrega as fotos do Storage privado
+                if (Array.isArray(acao.fotos) && acao.fotos.length > 0) {
+
                     const galeria = criarElemento(
                         "div",
                         undefined,
                         "galeria-fotos"
                     );
 
-                    for (const foto of acao.fotos) {
-                        const caminho =
-                            typeof foto === "string"
-                                ? foto
-                                : foto?.path;
+                    const resultadosFotos = await Promise.all(
+                        acao.fotos.map(async (caminho) => {
 
-                        if (!caminho) continue;
+                            if (
+                                typeof caminho !== "string" ||
+                                !caminho
+                            ) {
+                                return null;
+                            }
 
-                        const { data, error } =
-                            await supabaseClient.storage
-                                .from("arquivos")
-                                .createSignedUrl(caminho, 3600);
+                            const { data, error: erroFoto } =
+                                await supabaseClient.storage
+                                    .from("arquivos")
+                                    .createSignedUrl(caminho, 3600);
 
-                        if (error || !data?.signedUrl) {
-                            console.warn(
-                                "Não foi possível carregar uma foto:",
-                                error
-                            );
-                            continue;
-                        }
+                            if (erroFoto) {
+                                console.error(
+                                    "Erro ao carregar foto:",
+                                    erroFoto
+                                );
+                                return null;
+                            }
+
+                            return data.signedUrl;
+                        })
+                    );
+
+                    resultadosFotos.forEach(url => {
+
+                        if (!url) return;
 
                         const imagem = document.createElement("img");
-                        imagem.src = data.signedUrl;
+                        imagem.src = url;
                         imagem.alt = "Foto da ação: " + (acao.titulo || "");
                         imagem.loading = "lazy";
 
                         galeria.appendChild(imagem);
-                    }
+
+                    });
 
                     if (galeria.childElementCount > 0) {
                         cartao.appendChild(galeria);
                     }
                 }
 
-                // Carregar documento PDF do armazenamento privado.
+                // Carrega o documento PDF, quando existir
                 if (acao.documento_url) {
-                    const { data, error } =
+
+                    const { data, error: erroDocumento } =
                         await supabaseClient.storage
                             .from("arquivos")
                             .createSignedUrl(acao.documento_url, 3600);
 
-                    if (!error && data?.signedUrl) {
-                        const link = document.createElement("a");
+                    if (erroDocumento) {
+                        console.error(
+                            "Erro ao carregar documento:",
+                            erroDocumento
+                        );
+                    } else {
 
+                        const link = document.createElement("a");
                         link.href = data.signedUrl;
                         link.target = "_blank";
                         link.rel = "noopener noreferrer";
-                        link.textContent = "📄 Abrir ou baixar PDF";
+                        link.textContent = "📄 Abrir documento PDF";
                         link.className = "link-arquivo";
 
                         cartao.appendChild(link);
-                    } else {
-                        console.warn(
-                            "Não foi possível carregar o PDF:",
-                            error
-                        );
                     }
                 }
 
@@ -270,15 +306,17 @@
             }
 
         } catch (erro) {
+
             console.error("Erro ao carregar ações:", erro);
 
+            lista.innerHTML = "";
             estadoVazio.hidden = false;
             estadoVazio.textContent =
                 "Não foi possível carregar as ações. Tente novamente mais tarde.";
-        }
-    }
 
-    carregarAcoes();
+        }
+
+    })();
     </script>
 
 </body>

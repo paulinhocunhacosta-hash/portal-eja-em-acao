@@ -8,39 +8,45 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-.pagina-escolas {
-    max-width: 1100px;
-    margin: 40px auto;
-    padding: 20px;
+.pagina-escolas{
+max-width:1100px;
+margin:40px auto;
+padding:20px;
 }
 
-.grade-escolas {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 22px;
-    margin-top: 25px;
+.grade-escolas{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:22px;
+margin-top:25px;
 }
 
-.cartao-escola {
-    background: #fff;
-    padding: 22px;
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(0,0,0,.08);
-    cursor: pointer;
-    transition: .3s;
+.cartao-escola{
+background:#fff;
+padding:22px;
+border-radius:12px;
+box-shadow:0 4px 14px rgba(0,0,0,.08);
+cursor:pointer;
+transition:.3s;
 }
 
-.cartao-escola:hover {
-    transform: translateY(-4px);
+.cartao-escola:hover{
+transform:translateY(-4px);
 }
 
-.cartao-escola h3 {
-    color: #155e75;
-    margin-bottom: 10px;
+.cartao-escola h3{
+color:#155e75;
+margin-bottom:10px;
 }
 
-.cartao-escola p {
-    line-height: 1.6;
+.cartao-escola p{
+line-height:1.6;
+}
+
+.mensagem-escolas{
+padding:20px;
+text-align:center;
+line-height:1.6;
 }
 </style>
 </head>
@@ -48,297 +54,131 @@
 <body>
 
 <header class="cabecalho">
-    <div class="logo">
-        <h1>PORTAL EJA EM AÇÃO</h1>
-        <p>Educação, participação e transformação</p>
-    </div>
+<div class="logo">
+<h1>PORTAL EJA EM AÇÃO</h1>
+<p>Educação, participação e transformação</p>
+</div>
 
-    <nav>
-        <a href="index.html">Início</a>
-        <a href="acoes.html">Ações</a>
-        <a href="materiais.html">Materiais</a>
-    </nav>
+<nav>
+<a href="index.html">Início</a>
+<a href="acoes.html">Ações</a>
+<a href="materiais.html">Materiais</a>
+</nav>
 </header>
 
 <main class="pagina-escolas">
 
-    <h2>Escolas da Rede Municipal</h2>
+<h2>Escolas da Rede Municipal</h2>
 
-    <p>Selecione uma escola para visualizar todas as ações aprovadas.</p>
+<p>Selecione uma escola para visualizar todas as ações aprovadas.</p>
 
-    <div id="estatisticasRede" class="estatisticas-rede"></div>
-
-    <div class="area-pesquisa-escolas">
-
-        <input
-            type="text"
-            id="pesquisaEscola"
-            placeholder="🔎 Pesquisar escola pelo nome..."
-            autocomplete="off"
-        >
-
-        <select id="filtroEscolas">
-            <option value="todas">Todas as escolas</option>
-            <option value="com-acoes">Com ações publicadas</option>
-            <option value="sem-acoes">Aguardando ações</option>
-        </select>
-
-    </div>
-
-    <div id="listaEscolas" class="grade-escolas"></div>
+<div id="listaEscolas" class="grade-escolas">
+<p class="mensagem-escolas">Carregando escolas...</p>
+</div>
 
 </main>
 
 <footer>
-    <p>© 2026 Portal EJA em Ação</p>
+<p>© 2026 Portal EJA em Ação</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 
 <script>
+const lista = document.getElementById("listaEscolas");
 
 async function carregarEscolas() {
 
-    const lista = document.getElementById("listaEscolas");
-    const painel = document.getElementById("estatisticasRede");
-
-    lista.textContent = "Carregando escolas...";
-
-    const [resultadoEscolas, resultadoAcoes] = await Promise.all([
-
-        supabaseClient
-            .from("escolas")
-            .select("id, nome")
-            .order("nome", { ascending: true }),
-
-        supabaseClient
-            .from("acoes")
-            .select("escola")
-            .eq("status", "aprovada")
-
-    ]);
-
-    if (resultadoEscolas.error) {
-        console.error("Erro ao buscar escolas:", resultadoEscolas.error);
-        lista.textContent = "Erro ao carregar escolas.";
-        return;
-    }
-
-    if (resultadoAcoes.error) {
-        console.error("Erro ao buscar ações:", resultadoAcoes.error);
-    }
-
-    const escolas = resultadoEscolas.data || [];
-    const acoes = resultadoAcoes.data || [];
-
-    lista.innerHTML = "";
-
-    function normalizarNome(nome) {
-        return (nome || "")
-            .trim()
-            .replace(/\.$/, "")
-            .toLocaleLowerCase("pt-BR");
-    }
-
-    // ESTATÍSTICAS DA REDE
-
-    const totalEscolas = escolas.length;
-
-    const totalAcoes = resultadoAcoes.error
-        ? null
-        : acoes.length;
-
-    const escolasComAcoes = resultadoAcoes.error
-        ? null
-        : escolas.filter(escola =>
-            acoes.some(acao =>
-                normalizarNome(acao.escola) ===
-                normalizarNome(escola.nome)
-            )
-        ).length;
-
-    const escolasSemAcoes = escolasComAcoes === null
-        ? null
-        : totalEscolas - escolasComAcoes;
-
-    // EXIBIÇÃO DAS ESTATÍSTICAS
-
-    painel.innerHTML = `
-        <div class="cartao-estatistica">
-            <span>🏫</span>
-            <strong>${totalEscolas}</strong>
-            <p>Escolas cadastradas</p>
-        </div>
-
-        <div class="cartao-estatistica">
-            <span>📚</span>
-            <strong>${totalAcoes ?? "—"}</strong>
-            <p>Ações publicadas</p>
-        </div>
-
-        <div class="cartao-estatistica">
-            <span>🟢</span>
-            <strong>${escolasComAcoes ?? "—"}</strong>
-            <p>Escolas com ações</p>
-        </div>
-
-        <div class="cartao-estatistica">
-            <span>⏳</span>
-            <strong>${escolasSemAcoes ?? "—"}</strong>
-            <p>Escolas sem ações</p>
-        </div>
+    lista.innerHTML = `
+        <p class="mensagem-escolas">Carregando escolas...</p>
     `;
 
-    // VERIFICA SE EXISTEM ESCOLAS
+    try {
 
-    if (escolas.length === 0) {
-        lista.textContent = "Ainda não há escolas cadastradas.";
-        return;
-    }
+        // Busca todas as escolas cadastradas
+        const { data: escolas, error: erroEscolas } =
+            await supabaseClient
+                .from("escolas")
+                .select("id, nome")
+                .order("nome", { ascending: true });
 
-    // CRIA CADA ESCOLA APENAS UMA VEZ
+        if (erroEscolas) {
+            throw erroEscolas;
+        }
 
-    escolas.forEach(escola => {
+        // Busca somente as ações aprovadas
+        const { data: acoes, error: erroAcoes } =
+            await supabaseClient
+                .from("acoes")
+                .select("escola_id")
+                .eq("status", "aprovada");
 
-        const cartao = document.createElement("div");
-        cartao.className = "cartao-escola";
+        if (erroAcoes) {
+            throw erroAcoes;
+        }
 
-        const titulo = document.createElement("h3");
-        titulo.textContent = escola.nome;
+        lista.innerHTML = "";
 
-        const descricao = document.createElement("p");
-        descricao.textContent =
-            "Clique para visualizar as ações desta escola.";
+        if (!escolas || escolas.length === 0) {
+            lista.innerHTML = `
+                <p class="mensagem-escolas">
+                    Ainda não há escolas cadastradas.
+                </p>
+            `;
+            return;
+        }
 
-        const quantidade = document.createElement("p");
+        // Cria um cartão para cada escola
+        escolas.forEach(escola => {
 
-        const total = resultadoAcoes.error
-            ? null
-            : acoes.filter(acao =>
-                normalizarNome(acao.escola) ===
-                normalizarNome(escola.nome)
+            // Conta somente as ações aprovadas daquela escola
+            const quantidade = (acoes || []).filter(
+                acao => acao.escola_id === escola.id
             ).length;
 
-        // IDENTIFICA A SITUAÇÃO DA ESCOLA PARA O FILTRO
+            const cartao = document.createElement("div");
+            cartao.className = "cartao-escola";
 
-        cartao.dataset.filtro = total === null
-            ? "indisponivel"
-            : total > 0
-                ? "com-acoes"
-                : "sem-acoes";
+            const titulo = document.createElement("h3");
+            titulo.textContent = escola.nome;
 
-        // INDICADOR VISUAL
+            const descricao = document.createElement("p");
 
-        const indicador = document.createElement("span");
-        indicador.className = "indicador-escola";
+            descricao.textContent =
+                quantidade === 1
+                    ? "1 ação publicada."
+                    : `${quantidade} ações publicadas.`;
 
-        if (total === null) {
+            cartao.appendChild(titulo);
+            cartao.appendChild(descricao);
 
-            quantidade.textContent =
-                "Não foi possível carregar a quantidade de ações.";
+            // Abre a página da escola usando seu UUID
+            cartao.addEventListener("click", function() {
+                window.location.href =
+                    "escola.html?id=" + encodeURIComponent(escola.id);
+            });
 
-            indicador.textContent = "Quantidade indisponível";
-            indicador.classList.add("indicador-indisponivel");
-
-        } else if (total === 0) {
-
-            quantidade.textContent = "Nenhuma ação publicada.";
-
-            indicador.textContent = "Aguardando ações";
-            indicador.classList.add("indicador-sem-acoes");
-
-        } else {
-
-            quantidade.textContent = total === 1
-                ? "1 ação publicada."
-                : total + " ações publicadas.";
-
-            indicador.textContent = "Com ações publicadas";
-            indicador.classList.add("indicador-com-acoes");
-
-        }
-
-        cartao.appendChild(indicador);
-        cartao.appendChild(titulo);
-        cartao.appendChild(descricao);
-        cartao.appendChild(quantidade);
-
-        // ABRIR PÁGINA INDIVIDUAL
-
-        cartao.addEventListener("click", () => {
-
-            window.location.href =
-                "escola.html?nome=" + encodeURIComponent(escola.nome);
+            lista.appendChild(cartao);
 
         });
 
-        lista.appendChild(cartao);
+    } catch (erro) {
 
-    });
+        console.error("Erro ao carregar escolas:", erro);
 
-    // PESQUISA E FILTRO DE ESCOLAS
-
-    const campoPesquisa = document.getElementById("pesquisaEscola");
-    const filtroEscolas = document.getElementById("filtroEscolas");
-
-    function aplicarFiltros() {
-
-        const termo = campoPesquisa.value
-            .trim()
-            .toLocaleLowerCase("pt-BR");
-
-        const filtro = filtroEscolas.value;
-
-        const cartoes = lista.querySelectorAll(".cartao-escola");
-
-        let encontrados = 0;
-
-        cartoes.forEach(cartao => {
-
-            const nome = cartao.querySelector("h3")
-                .textContent
-                .toLocaleLowerCase("pt-BR");
-
-            const correspondeNome = nome.includes(termo);
-
-            const correspondeFiltro =
-                filtro === "todas" ||
-                cartao.dataset.filtro === filtro;
-
-            const mostrar = correspondeNome && correspondeFiltro;
-
-            cartao.style.display = mostrar ? "" : "none";
-
-            if (mostrar) {
-                encontrados++;
-            }
-
-        });
-
-        let mensagem = lista.querySelector(".mensagem-pesquisa");
-
-        if (!mensagem) {
-            mensagem = document.createElement("p");
-            mensagem.className = "mensagem-pesquisa";
-            lista.appendChild(mensagem);
-        }
-
-        mensagem.textContent = encontrados === 0
-            ? "Nenhuma escola encontrada com esses critérios."
-            : "";
+        lista.innerHTML = `
+            <p class="mensagem-escolas">
+                Não foi possível carregar as escolas.
+                Tente novamente mais tarde.
+            </p>
+        `;
 
     }
-
-    campoPesquisa.oninput = aplicarFiltros;
-    filtroEscolas.onchange = aplicarFiltros;
 
 }
 
-// CHAMA A FUNÇÃO APENAS UMA VEZ
-
 carregarEscolas();
-
 </script>
 
 </body>

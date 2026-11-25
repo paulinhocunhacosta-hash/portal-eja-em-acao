@@ -2,59 +2,92 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ações da Escola | Portal EJA em Ação</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ações da Escola | Portal EJA em Ação</title>
+    <link rel="stylesheet" href="style.css">
 
-<style>
-.pagina-escola {
-    max-width: 1100px;
-    margin: 40px auto;
-    padding: 20px;
-}
+    <style>
+        .pagina-escola {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+        }
 
-.cartao-acao {
-    background: white;
-    padding: 24px;
-    margin: 22px 0;
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(0,0,0,.08);
-}
+        .cabecalho-escola {
+            background: #e0f2fe;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
 
-.cartao-acao h3 {
-    color: #155e75;
-    margin-bottom: 12px;
-}
+        .cabecalho-escola h2 {
+            color: #155e75;
+            margin-bottom: 10px;
+            overflow-wrap: anywhere;
+        }
 
-.galeria-fotos {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 14px;
-    margin-top: 18px;
-}
+        .grade-acoes-escola {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
 
-.galeria-fotos img {
-    width: 100%;
-    max-height: 280px;
-    object-fit: cover;
-    border-radius: 8px;
-}
+        .cartao-acao-escola {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            overflow-wrap: anywhere;
+        }
 
-.link-arquivo {
-    display: inline-block;
-    margin-top: 15px;
-    color: #155e75;
-    font-weight: bold;
-}
+        .cartao-acao-escola h3 {
+            color: #155e75;
+            margin-bottom: 12px;
+        }
 
-.voltar {
-    display: inline-block;
-    margin-bottom: 20px;
-    color: #155e75;
-    font-weight: bold;
-}
-</style>
+        .cartao-acao-escola p {
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .fotos-acao {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .fotos-acao img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .link-documento {
+            display: inline-block;
+            margin-top: 10px;
+            background: #0e7490;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+        .mensagem-escola {
+            background: #f0f9ff;
+            padding: 18px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .voltar-escolas {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #0e7490;
+        }
+    </style>
 </head>
 
 <body>
@@ -67,20 +100,23 @@
 
     <nav>
         <a href="index.html">Início</a>
-        <a href="acoes.html">Ações</a>
+        <a href="acoes.html">Ações e Projetos</a>
+        <a href="escolas.html">Escolas</a>
         <a href="materiais.html">Materiais</a>
-        <a href="escolas.html">Escolas da Rede</a>
     </nav>
 </header>
 
 <main class="pagina-escola">
 
-    <a class="voltar" href="escolas.html">← Voltar para Escolas da Rede</a>
+    <a class="voltar-escolas" href="escolas.html">← Voltar para as escolas</a>
 
-    <h2 id="nomeEscola">Ações da Escola</h2>
+    <section class="cabecalho-escola">
+        <h2 id="nomeEscola">Carregando escola...</h2>
+        <p id="resumoEscola">Conheça as experiências desenvolvidas na EJA.</p>
+    </section>
 
-    <div id="listaAcoes">
-        <p>Carregando ações...</p>
+    <div id="listaAcoesEscola" class="grade-acoes-escola">
+        <p class="mensagem-escola">Carregando ações...</p>
     </div>
 
 </main>
@@ -93,121 +129,231 @@
 <script src="supabase.js"></script>
 
 <script>
-function normalizarNome(nome) {
-    return (nome || "")
-        .trim()
-        .replace(/\.+$/, "")
-        .toLocaleLowerCase("pt-BR");
-}
+(async function () {
 
-async function carregarAcoesDaEscola() {
-    const lista = document.getElementById("listaAcoes");
-    const nomeOriginal = new URLSearchParams(window.location.search)
-        .get("nome");
+    const parametros = new URLSearchParams(window.location.search);
+    const escolaId = parametros.get("id");
 
-    if (!nomeOriginal) {
-        lista.textContent = "Nenhuma escola foi selecionada.";
+    const titulo = document.getElementById("nomeEscola");
+    const resumo = document.getElementById("resumoEscola");
+    const lista = document.getElementById("listaAcoesEscola");
+
+    function elemento(tag, texto, classe) {
+        const el = document.createElement(tag);
+        el.textContent = texto;
+
+        if (classe) {
+            el.className = classe;
+        }
+
+        return el;
+    }
+
+    function formatarData(data) {
+        if (!data) return "Não informada";
+
+        const partes = data.split("-");
+
+        if (partes.length === 3) {
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        return data;
+    }
+
+    // Verifica se uma escola foi selecionada
+    if (!escolaId) {
+        titulo.textContent = "Escola não selecionada";
+        resumo.textContent = "Volte à página de escolas e selecione uma escola.";
+
+        lista.innerHTML = "";
+        lista.appendChild(
+            elemento("p", "Nenhuma escola foi informada.", "mensagem-escola")
+        );
+
         return;
     }
 
-    document.getElementById("nomeEscola").textContent =
-        "Ações de " + nomeOriginal;
+    try {
 
-    const { data, error } = await supabaseClient
-        .from("acoes")
-        .select("*")
-        .eq("status", "aprovada")
-        .order("criado_em", { ascending: false });
+        // Busca os dados da escola pelo UUID
+        const { data: escola, error: erroEscola } =
+            await supabaseClient
+                .from("escolas")
+                .select("id, nome")
+                .eq("id", escolaId)
+                .maybeSingle();
 
-    if (error) {
-        console.error(error);
-        lista.textContent = "Não foi possível carregar as ações: " + error.message;
-        return;
-    }
+        if (erroEscola) {
+            throw erroEscola;
+        }
 
-    const acoes = (data || []).filter(
-        acao => normalizarNome(acao.escola) === normalizarNome(nomeOriginal)
-    );
+        if (!escola) {
+            titulo.textContent = "Escola não encontrada";
+            resumo.textContent = "Não foi possível localizar esta escola.";
 
-    lista.innerHTML = "";
+            lista.innerHTML = "";
+            lista.appendChild(
+                elemento("p", "A escola solicitada não foi encontrada.", "mensagem-escola")
+            );
 
-    if (acoes.length === 0) {
-        lista.textContent = "Ainda não há ações publicadas para esta escola.";
-        return;
-    }
+            return;
+        }
 
-    for (const acao of acoes) {
-        const cartao = document.createElement("article");
-        cartao.className = "cartao-acao";
+        titulo.textContent = escola.nome;
 
-        const titulo = document.createElement("h3");
-        titulo.textContent = acao.titulo || "Ação pedagógica";
-        cartao.appendChild(titulo);
+        // Busca somente as ações aprovadas da escola selecionada
+        const { data: acoes, error: erroAcoes } =
+            await supabaseClient
+                .from("acoes")
+                .select("id, titulo, professor, turma, data_acao, descricao, fotos, documento_url")
+                .eq("escola_id", escola.id)
+                .eq("status", "aprovada")
+                .order("data_acao", { ascending: false });
 
-        const professor = document.createElement("p");
-        professor.textContent = "Professor(a): " + (acao.professor || "Não informado");
-        cartao.appendChild(professor);
+        if (erroAcoes) {
+            throw erroAcoes;
+        }
 
-        const turma = document.createElement("p");
-        turma.textContent = "Turma: " + (acao.turma || "Não informada");
-        cartao.appendChild(turma);
+        lista.innerHTML = "";
 
-        const data = document.createElement("p");
-        data.textContent = "Data: " + (acao.data_acao || "Não informada");
-        cartao.appendChild(data);
+        const registros = acoes || [];
 
-        const descricao = document.createElement("p");
-        descricao.textContent = acao.descricao || "";
-        cartao.appendChild(descricao);
+        resumo.textContent = registros.length === 1
+            ? "Esta escola possui 1 ação publicada."
+            : `Esta escola possui ${registros.length} ações publicadas.`;
 
-        if (Array.isArray(acao.fotos) && acao.fotos.length > 0) {
-            const galeria = document.createElement("div");
-            galeria.className = "galeria-fotos";
+        if (registros.length === 0) {
+            lista.appendChild(
+                elemento(
+                    "p",
+                    "Não há ações aprovadas para esta escola no momento.",
+                    "mensagem-escola"
+                )
+            );
 
-            for (const caminho of acao.fotos) {
-                const { data: arquivo, error: erroFoto } =
+            return;
+        }
+
+        // Cria os cartões das ações
+        for (const acao of registros) {
+
+            const cartao = document.createElement("article");
+            cartao.className = "cartao-acao-escola";
+
+            cartao.appendChild(
+                elemento("h3", acao.titulo || "Ação sem título")
+            );
+
+            cartao.appendChild(
+                elemento("p", "Professor(a): " + (acao.professor || "Não informado"))
+            );
+
+            if (acao.turma) {
+                cartao.appendChild(
+                    elemento("p", "Turma: " + acao.turma)
+                );
+            }
+
+            cartao.appendChild(
+                elemento("p", "Data: " + formatarData(acao.data_acao))
+            );
+
+            cartao.appendChild(
+                elemento("p", acao.descricao || "Sem descrição.")
+            );
+
+            // Carrega as fotos privadas usando URLs temporárias
+            if (Array.isArray(acao.fotos) && acao.fotos.length > 0) {
+
+                const galeria = document.createElement("div");
+                galeria.className = "fotos-acao";
+
+                const resultadosFotos = await Promise.all(
+                    acao.fotos.map(async (caminho) => {
+
+                        if (typeof caminho !== "string" || !caminho) {
+                            return null;
+                        }
+
+                        const { data, error } =
+                            await supabaseClient.storage
+                                .from("arquivos")
+                                .createSignedUrl(caminho, 3600);
+
+                        if (error) {
+                            console.error("Erro ao carregar foto:", error);
+                            return null;
+                        }
+
+                        return data.signedUrl;
+                    })
+                );
+
+                resultadosFotos.forEach(url => {
+
+                    if (!url) return;
+
+                    const imagem = document.createElement("img");
+                    imagem.src = url;
+                    imagem.alt = "Foto da ação pedagógica";
+                    imagem.loading = "lazy";
+
+                    galeria.appendChild(imagem);
+
+                });
+
+                if (galeria.childElementCount > 0) {
+                    cartao.appendChild(galeria);
+                }
+            }
+
+            // Carrega o documento PDF, quando existir
+            if (acao.documento_url) {
+
+                const { data, error } =
                     await supabaseClient.storage
                         .from("arquivos")
-                        .createSignedUrl(caminho, 3600);
+                        .createSignedUrl(acao.documento_url, 3600);
 
-                if (erroFoto) {
-                    console.error("Erro ao abrir foto:", erroFoto);
-                    continue;
+                if (error) {
+                    console.error("Erro ao carregar documento:", error);
+                } else {
+
+                    const link = document.createElement("a");
+                    link.className = "link-documento";
+                    link.href = data.signedUrl;
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    link.textContent = "Abrir documento PDF";
+
+                    cartao.appendChild(link);
                 }
-
-                const imagem = document.createElement("img");
-                imagem.src = arquivo.signedUrl;
-                imagem.alt = "Foto da ação pedagógica";
-                galeria.appendChild(imagem);
             }
 
-            cartao.appendChild(galeria);
+            lista.appendChild(cartao);
+
         }
 
-        if (acao.documento_url) {
-            const { data: arquivo, error: erroPDF } =
-                await supabaseClient.storage
-                    .from("arquivos")
-                    .createSignedUrl(acao.documento_url, 3600);
+    } catch (erro) {
 
-            if (erroPDF) {
-                console.error("Erro ao abrir PDF:", erroPDF);
-            } else {
-                const link = document.createElement("a");
-                link.href = arquivo.signedUrl;
-                link.target = "_blank";
-                link.rel = "noopener noreferrer";
-                link.className = "link-arquivo";
-                link.textContent = "📄 Abrir ou baixar PDF";
-                cartao.appendChild(link);
-            }
-        }
+        console.error("Erro ao carregar página da escola:", erro);
 
-        lista.appendChild(cartao);
+        titulo.textContent = "Não foi possível carregar a escola";
+        resumo.textContent = "Ocorreu um problema ao consultar os dados.";
+
+        lista.innerHTML = "";
+        lista.appendChild(
+            elemento(
+                "p",
+                "Não foi possível carregar as ações desta escola. Tente novamente mais tarde.",
+                "mensagem-escola"
+            )
+        );
+
     }
-}
 
-carregarAcoesDaEscola();
+})();
 </script>
 
 </body>
